@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "953644811512",
+    "firebase_url": "https://qikexpress.firebaseio.com",
+    "project_id": "qikexpress",
+    "storage_bucket": "qikexpress.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:953644811512:android:e2c9001e5db16600",
+        "android_client_info": {
+          "package_name": "com.equinox.qikexpress"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "953644811512-4jp1i0cp7ussim6bhlg0rghshraeou3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.equinox.qikexpress",
+            "certificate_hash": "6E1CCDD8C526CAD149A883FFD395401D40D85895"
+          }
+        },
+        {
+          "client_id": "953644811512-683rk8rbsbv3pmt7s9diqri72ud93o4v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrHwdxsz9UFHuOrl5PBkQ91ZjTLT1d7_s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "953644811512-683rk8rbsbv3pmt7s9diqri72ud93o4v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
