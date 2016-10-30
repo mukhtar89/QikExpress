@@ -22,17 +22,16 @@
         android:backgroundTint="@android:color/holo_red_dark"
         android:elevation="0dp" />
 
-    <ImageView
+    <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/login_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
-        app:srcCompat="@android:drawable/sym_def_app_icon" />
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:id="@+id/login_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
@@ -40,7 +39,7 @@
         android:id="@+id/login_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:paddingTop="5dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 </LinearLayout>

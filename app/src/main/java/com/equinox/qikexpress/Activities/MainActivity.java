@@ -1,34 +1,31 @@
-package com.equinox.qikexpress;
+package com.equinox.qikexpress.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.LayoutInflaterCompat;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
+import android.view.View;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.equinox.qikexpress.Adapters.MainRecyclerViewAdapter;
+import com.equinox.qikexpress.R;
+import com.equinox.qikexpress.Utils.AppVolleyController;
+import com.equinox.qikexpress.Utils.HybridLayoutManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -39,8 +36,10 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth.AuthStateListener mAuthListener;
     private Button loginButton;
     private TextView loginName, loginEmail;
-    private ImageView loginImage;
+    private NetworkImageView loginImage;
     private RecyclerView recyclerView;
+    private HybridLayoutManager layoutManager;
+    private ImageLoader imageLoader = AppVolleyController.getInstance().getImageLoader();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +53,19 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    Log.d("AUTH", "OnAuthState: Signed in " + user.getUid());
-                }
-                else {
+                if (user == null) {
                     Log.d("AUTH", "OnAuthState: signed out");
+                    loginButton.setVisibility(View.VISIBLE);
+                    loginImage.setVisibility(View.GONE);
+                    loginEmail.setVisibility(View.GONE);
+                    loginName.setVisibility(View.GONE);
+                } else {
+                    Log.d("AUTH", "OnAuthState: Signed in " + user.getUid());
+                    loginButton.setVisibility(View.GONE);
+                    loginName.setText(user.getDisplayName());
+                    loginEmail.setText(user.getEmail());
+                    if (user.getPhotoUrl() != null)
+                        loginImage.setImageUrl(user.getPhotoUrl().toString(), imageLoader);
                 }
             }
         };
@@ -85,7 +92,7 @@ public class MainActivity extends AppCompatActivity
         loginButton = (Button) navigationHeaderView.findViewById(R.id.login_button);
         loginName = (TextView) navigationHeaderView.findViewById(R.id.login_name);
         loginEmail = (TextView) navigationHeaderView.findViewById(R.id.login_email);
-        loginImage = (ImageView) navigationHeaderView.findViewById(R.id.login_image);
+        loginImage = (NetworkImageView) navigationHeaderView.findViewById(R.id.login_image);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,65 +100,12 @@ public class MainActivity extends AppCompatActivity
                 startActivity(loginIntent);
             }
         });
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            loginButton.setVisibility(View.VISIBLE);
-            loginImage.setVisibility(View.GONE);
-            loginEmail.setVisibility(View.GONE);
-            loginName.setVisibility(View.GONE);
-        }
-        else loginButton.setVisibility(View.GONE);
-        loginName.setText(user.getDisplayName());
-        loginEmail.setText(user.getEmail());
-        loginImage.setImageURI(user.getPhotoUrl());
 
-        Display display = getWindowManager().getDefaultDisplay();
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-        float density  = getResources().getDisplayMetrics().density;
-        final float dpWidth  = outMetrics.widthPixels / density;
-        int columns = Math.round(dpWidth/200);
-        final GridLayoutManager layoutManager = new GridLayoutManager(MainActivity.this, columns);
-        layoutManager.setOrientation(GridLayoutManager.VERTICAL);
-        layoutManager.canScrollVertically();
-
+        layoutManager = new HybridLayoutManager(this);
         recyclerView = (RecyclerView) findViewById(R.id.main_grid_view);
-        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setLayoutManager(layoutManager.getLayoutManager(200));
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(new RecyclerView.Adapter<ListViewHolder>() {
-
-            @Override
-            public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View holder = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_menu_list, parent, false);
-                return new ListViewHolder(holder);
-            }
-
-            @Override
-            public void onBindViewHolder(ListViewHolder holder, int position) {
-                holder.cardText.setText(QikList.values()[position].getListName());
-                holder.cardIcon.setImageDrawable(getResources().getDrawable(QikList.values()[position].getIcon()));
-                holder.listCard.setBackground(getResources().getDrawable(QikList.values()[position].getBackground()));
-            }
-
-            @Override
-            public int getItemCount() {
-                return 5;
-            }
-        });
-
-    }
-
-    public class ListViewHolder extends RecyclerView.ViewHolder {
-        CardView listCard;
-        TextView cardText;
-        ImageView cardIcon;
-
-        public ListViewHolder(View itemView) {
-            super(itemView);
-            listCard = (CardView) itemView.findViewById(R.id.listCard);
-            cardText = (TextView) itemView.findViewById(R.id.card_text);
-            cardIcon = (ImageView) itemView.findViewById(R.id.card_icon);
-        }
+        recyclerView.setAdapter(new MainRecyclerViewAdapter(this));
     }
 
     @Override

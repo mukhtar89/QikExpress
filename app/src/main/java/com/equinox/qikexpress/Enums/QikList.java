@@ -1,7 +1,9 @@
-package com.equinox.qikexpress;
+package com.equinox.qikexpress.Enums;
 
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+
+import com.equinox.qikexpress.R;
 
 /**
  * Created by mukht on 10/22/2016.
