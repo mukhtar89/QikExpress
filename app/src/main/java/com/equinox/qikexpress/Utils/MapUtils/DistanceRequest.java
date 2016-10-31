@@ -1,6 +1,5 @@
 package com.equinox.qikexpress.Utils.MapUtils;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 

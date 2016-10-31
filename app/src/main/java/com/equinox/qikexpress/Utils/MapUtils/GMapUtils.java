@@ -92,6 +92,6 @@ public class GMapUtils {
                 message.arg2 = time.intValue();
                 handleDistance.sendMessage(message);
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new String[]{sourceLat + ", " + sourceLng, destLat + ", " + destLng});
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, sourceLat + ", " + sourceLng, destLat + ", " + destLng);
     }
 }

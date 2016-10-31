@@ -24,4 +24,5 @@
     <string name="action_fb_sign_in">Login via Facebook</string>
     <string name="title_activity_google_sign_in">GoogleSignInActivity</string>
     <string name="grocery_activity_name">Grocery List</string>
+    <string name="action_search">Search</string>
 </resources>

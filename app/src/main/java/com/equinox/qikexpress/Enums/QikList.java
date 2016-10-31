@@ -1,8 +1,5 @@
 package com.equinox.qikexpress.Enums;
 
-import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
-
 import com.equinox.qikexpress.R;
 
 /**
@@ -11,16 +8,20 @@ import com.equinox.qikexpress.R;
 
 public enum QikList {
 
-    GROCERY(0, "Grocery",  R.drawable.grocery_edited, R.drawable.ic_menu_camera), RESTAURANT(0, "Restaurant",  R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    CLOTHING(0, "Clothing",  R.drawable.grocery_edited, R.drawable.ic_menu_camera), LAUNDRY(0, "Laundry",  R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    DOORTODOOR(0, "Door-to-door",  R.drawable.grocery_edited, R.drawable.ic_menu_camera);
+    GROCERY(0, "Grocery",  "grocery_or_supermarket", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
+    RESTAURANT(0, "Restaurant", "restaurant", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
+    CLOTHING(0, "Clothing", "clothing_store", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
+    LAUNDRY(0, "Laundry", "laundry", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
+    DOORTODOOR(0, "Door-to-door", "sublocality", R.drawable.grocery_edited, R.drawable.ic_menu_camera);
 
     private int position;
     private String listName;
+    private String typeName;
     private int background, icon;
 
-    QikList(int position, String listName, int background, int icon) {
+    QikList(int position, String listName, String typeName, int background, int icon) {
         this.listName = listName;
+        this.typeName = typeName;
         this.position = position;
         this.background = background;
         this.icon = icon;
@@ -33,6 +34,8 @@ public enum QikList {
     public String getListName() {
         return listName;
     }
+
+    public String getTypeName() { return typeName; }
 
     public int getBackground() {
         return background;
