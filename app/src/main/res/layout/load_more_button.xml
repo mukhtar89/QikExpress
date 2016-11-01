@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Button xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="wrap_content"
-    android:text="Load More Groceries"
-    android:textColor="@color/colorPrimary"
-    android:id="@+id/load_more_items"
-    style="@style/Widget.AppCompat.Button.Borderless"
-    android:drawableLeft="@drawable/ic_refresh_black_24dp"
-    android:drawableTint="@color/colorPrimary"
-    android:drawablePadding="3dp" >
-
-</Button>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_refresh_black_48dp"
+        android:layout_gravity="center_vertical|left"
+        android:tint="@color/colorPrimary"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Load More Groceries"
+        android:textColor="@color/colorPrimary"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:id="@+id/load_more_items"
+        style="@style/Widget.AppCompat.Button.Borderless" />
+</LinearLayout>

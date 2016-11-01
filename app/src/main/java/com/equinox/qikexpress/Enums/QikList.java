@@ -8,11 +8,11 @@ import com.equinox.qikexpress.R;
 
 public enum QikList {
 
-    GROCERY(0, "Grocery",  "grocery_or_supermarket", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    RESTAURANT(0, "Restaurant", "restaurant", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    CLOTHING(0, "Clothing", "clothing_store", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    LAUNDRY(0, "Laundry", "laundry", R.drawable.grocery_edited, R.drawable.ic_menu_camera),
-    DOORTODOOR(0, "Door-to-door", "sublocality", R.drawable.grocery_edited, R.drawable.ic_menu_camera);
+    GROCERY(0, "Grocery",  "grocery_or_supermarket", R.drawable.grocery_edited, R.drawable.ic_local_grocery_store_white_48dp),
+    RESTAURANT(0, "Restaurant", "restaurant", R.drawable.restaurant_edited, R.drawable.ic_restaurant_white_48dp),
+    CLOTHING(0, "Clothing", "clothing_store", R.drawable.clothing_edited, R.drawable.ic_shop_white_48dp),
+    LAUNDRY(0, "Laundry", "laundry", R.drawable.laundry_edited, R.drawable.ic_local_laundry_service_white_48dp),
+    DOORTODOOR(0, "Door-to-door", "sublocality", R.drawable.delivery_edited, R.drawable.ic_directions_run_white_48dp);
 
     private int position;
     private String listName;

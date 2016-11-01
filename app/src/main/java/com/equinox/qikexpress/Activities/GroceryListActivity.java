@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.equinox.qikexpress.Adapters.GroceryListRecyclerAdapter;
@@ -42,7 +43,7 @@ public class GroceryListActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private Handler handlerLocation;
     private Handler.Callback locationCallback;
-    private TextView sortBy, filterBy;
+    private LinearLayout sortBy, filterBy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +89,7 @@ public class GroceryListActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(listRecyclerAdapter);
 
-        sortBy = (TextView) findViewById(R.id.sort_by);
+        sortBy = (LinearLayout) findViewById(R.id.sort_by);
         sortBy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -152,7 +153,7 @@ public class GroceryListActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.shop_menu, menu);
         return true;
     }
 
@@ -168,7 +169,7 @@ public class GroceryListActivity extends AppCompatActivity {
             return true;
         }
 
-        if (id == R.id.action_search) {
+        if (id == R.id.action_cart) {
             return true;
         }
 

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:background="@drawable/side_nav_bar"
     android:gravity="bottom"
@@ -22,11 +20,22 @@
         android:backgroundTint="@android:color/holo_red_dark"
         android:elevation="0dp" />
 
-    <com.android.volley.toolbox.NetworkImageView
-        android:id="@+id/login_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:paddingTop="@dimen/nav_header_vertical_spacing" />
+    <FrameLayout
+        android:layout_width="112dp"
+        android:layout_height="124dp"
+        android:paddingTop="@dimen/nav_header_vertical_spacing">
+        <com.android.volley.toolbox.NetworkImageView
+            android:id="@+id/login_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/profile_border"/>
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/profile_border"/>
+    </FrameLayout>
+
+
 
     <TextView
         android:layout_width="match_parent"
