@@ -54,7 +54,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
         if (groceryItem.getGroceryItemImage() != null)
             holder.getItemImg().setImageUrl(groceryItem.getGroceryItemImage(), DataHolder.getInstance().getImageLoader());
         holder.getGroceryItemName().setText(groceryItem.getGroceryItemName());
-        holder.getGroceryItemPrice().setText(groceryItem.getGroceryItemPriceValue().toString());
+        holder.getGroceryItemPrice().setText(groceryItem.getGroceryItemPriceValue() == null ? "N/A" : groceryItem.getGroceryItemPriceValue().toString());
         groceryItemCart.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

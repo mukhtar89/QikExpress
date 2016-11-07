@@ -24,12 +24,14 @@ public class GroceryCategory2RecyclerViewHolder extends RecyclerView.ViewHolder 
     private Activity activity;
     private String category1;
     private List<String> category2List;
+    private Boolean isPartner;
 
-    public GroceryCategory2RecyclerViewHolder(View itemView, Activity activity, List<String> category2List, String category1) {
+    public GroceryCategory2RecyclerViewHolder(View itemView, Activity activity, List<String> category2List, String category1, Boolean isPartner) {
         super(itemView);
         this.activity = activity;
         this.category1 = category1;
         this.category2List = category2List;
+        this.isPartner = isPartner;
         category2Card = (CardView) itemView.findViewById(R.id.grocery_category2_card);
         groceryCategory2Name = (TextView) itemView.findViewById(R.id.grocery_category2_name);
         category2Img = (NetworkImageView) itemView.findViewById(R.id.grocery_category2_image);
@@ -51,6 +53,7 @@ public class GroceryCategory2RecyclerViewHolder extends RecyclerView.ViewHolder 
         Intent itemIntent = new Intent(activity, GroceryItemActivity.class);
         itemIntent.putExtra("CATEGORY1", category1);
         itemIntent.putExtra("CATEGORY2", category2List.get(getLayoutPosition()));
+        itemIntent.putExtra("PARTNER", isPartner);
         activity.startActivity(itemIntent);
     }
 }

@@ -38,6 +38,4 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:4.17.0'
 }
 
-
-
 apply plugin: 'com.google.gms.google-services'

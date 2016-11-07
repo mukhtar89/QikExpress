@@ -71,9 +71,14 @@ public class GroceryItemDBHandler {
         AppVolleyController.getInstance().addToRequestQueue(categoriesReq);
     }
 
-    public void parseChildren(final String placeId) {
-        String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryitemsoperations/v1/groceryItems/select?placeid=";
-        JsonObjectRequest groceryItemsReq = new JsonObjectRequest(baseURL+placeId, null, new Response.Listener<JSONObject>() {
+    public void parseChildren(final String placeId, final Boolean isPartner) {
+        String baseURL;
+        if (isPartner) baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryitemsoperations/v1/groceryItems/select?placeid="+placeId;
+        else {
+            baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryitemsoperations/v1/groceryItems/all";
+            listDataChild.clear();
+        }
+        final JsonObjectRequest groceryItemsReq = new JsonObjectRequest(baseURL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d(TAG, response.toString());
@@ -86,8 +91,8 @@ public class GroceryItemDBHandler {
                             JSONObject groceryItemObject = categoryArray.getJSONObject(i);
                             GroceryItem groceryItem = new GroceryItem();
                             groceryItem.setGroceryId(placeId);
+                            if (isPartner) groceryItem.setGroceryItemPriceValue((float) groceryItemObject.getDouble("groceryItemPriceValue"));
                             groceryItem.setGroceryItemId(groceryItemObject.getInt("groceryItemId"));
-                            groceryItem.setGroceryItemPriceValue((float) groceryItemObject.getDouble("groceryItemPriceValue"));
                             groceryItem.setGroceryItemName(groceryItemObject.getString("groceryItemName"));
                             if (groceryItemObject.has("groceryItemImage"))
                                 groceryItem.setGroceryItemImage(groceryItemObject.getString("groceryItemImage"));

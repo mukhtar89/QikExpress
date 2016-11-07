@@ -1,6 +1,7 @@
 package com.equinox.qikexpress.Activities;
 
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -40,6 +41,10 @@ public class GroceryItemActivity extends AppCompatActivity {
 
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
+        Boolean isPartner = getIntent().getBooleanExtra("PARTNER", true);
+        if (isPartner) {
+            Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout), "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
+        }
         groceryItemList1 = DataHolder.getInstance().getGroceryItemMapping().get(category1);
         groceryItemList2 = new ArrayList<>();
         for (GroceryItem item : groceryItemList1) {

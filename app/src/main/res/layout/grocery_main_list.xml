@@ -6,9 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="150dp"
     android:id="@+id/list_card_grocery"
-    android:padding="-2dp"
-    android:layout_margin="-2dp"
-    card_view:cardUseCompatPadding="true"
+    android:layout_margin="1dp"
     card_view:cardElevation="4dp"
     card_view:cardCornerRadius="2dp">
 

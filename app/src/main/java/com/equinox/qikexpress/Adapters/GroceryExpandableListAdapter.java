@@ -3,6 +3,7 @@ package com.equinox.qikexpress.Adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.annotation.BoolRes;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,8 +20,10 @@ import com.equinox.qikexpress.Utils.AppVolleyController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by mukht on 11/3/2016.
@@ -32,13 +35,15 @@ public class GroceryExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> listDataHeader; // header titles
     private Map<String,String> categoryImageMapping;
     private HashMap<String, List<GroceryItem>> listDataChild;
+    private Boolean isPartner;
 
     public GroceryExpandableListAdapter(List<String> listDataHeader, HashMap<String,
-            List<GroceryItem>> listChildData, Map<String,String> categoryImageMapping, Activity activity) {
+            List<GroceryItem>> listChildData, Map<String, String> categoryImageMapping, Activity activity, boolean isPartner) {
         this.activity = activity;
         this.listDataHeader = listDataHeader;
         this.listDataChild = listChildData;
         this.categoryImageMapping = categoryImageMapping;
+        this.isPartner = isPartner;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class GroceryExpandableListAdapter extends BaseExpandableListAdapter {
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false);
         itemChildRecyclerView.setLayoutManager(layoutManager);
         itemChildRecyclerView.setHasFixedSize(true);
-        itemChildRecyclerView.setAdapter(new GroceryCategory2RecyclerAdapter(activity, categoryImageMapping, getLevel2Categories(groupPosition), listDataHeader.get(groupPosition)));
+        itemChildRecyclerView.setAdapter(new GroceryCategory2RecyclerAdapter(activity, categoryImageMapping, getLevel2Categories(groupPosition), listDataHeader.get(groupPosition), isPartner));
         return convertView;
     }
 
@@ -111,12 +116,14 @@ public class GroceryExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     private List<String> getLevel2Categories(int groupPosition) {
-        List<String> cat2List = new ArrayList<>();
+        Set<String> cat2List = new HashSet<>();
         List<GroceryItem> childItems = listDataChild.get(listDataHeader.get(groupPosition));
         for (int i=0; i<childItems.size(); i++) {
-            if (childItems.get(i).getCatLevel().size() > 1)
-                cat2List.add(childItems.get(i).getCatLevel().get(1));
+            if (childItems.get(i).getCatLevel().size() > 1) {
+                if (!cat2List.contains(childItems.get(i).getCatLevel().get(1)))
+                    cat2List.add(childItems.get(i).getCatLevel().get(1));
+            }
         }
-        return cat2List;
+        return new ArrayList<>(cat2List);
     }
 }

@@ -1,50 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:swipe="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="150dp"
+    android:layout_height="160dp"
+    android:layout_margin="3dp"
     android:id="@+id/grocery_cart_card_view">
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.android.volley.toolbox.NetworkImageView
-            android:layout_width="130dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/grocery_cart_item_image"/>
-
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="170dp"
+            android:layout_height="match_parent"
             android:orientation="vertical">
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:padding="5dp"
+                android:id="@+id/grocery_cart_item_image"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="55dp"
+                    android:layout_height="wrap_content"
+                    android:text="Save For Later"
+                    android:textStyle="bold"
+                    android:textColor="#ff0000"
+                    android:layout_gravity="center|center_vertical|center_horizontal"
+                    android:gravity="center"/>
+
+                <Switch
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:layout_gravity="center|center_vertical|center_horizontal"
+                    android:id="@+id/grocery_cart_saveforlater"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="130dp"
+            android:layout_marginEnd="70dp"
+            android:layout_gravity="start"
+            android:gravity="start"
+            android:orientation="vertical"
+            android:id="@+id/cart_item_content">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="#ff8c00"
+                android:textSize="20sp"
+                android:gravity="start"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="0dp"
                 android:id="@+id/grocery_cart_item_name"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textStyle="italic"
+                android:textColor="#388700"
+                android:textSize="15sp"
+                android:gravity="start"
+                android:padding="10dp"
                 android:id="@+id/grocery_cart_grocery_name" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold|italic"
+                android:gravity="end"
+                android:padding="10dp"
+                android:layout_marginRight="20dp"
                 android:id="@+id/grocery_cart_item_price" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_gravity="end"
+            android:padding="5dp"
+            android:gravity="end">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="Quantity"
+                android:textStyle="bold"
+                android:textColor="#0800ff"
+                android:gravity="center"/>
 
             <NumberPicker
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/grocery_cart_quantity">
-
-            </NumberPicker>
-
+                android:id="@+id/grocery_cart_quantity"/>
 
         </LinearLayout>
-
-
-
-    </RelativeLayout>
+    </FrameLayout>
 
 </android.support.v7.widget.CardView>

@@ -52,6 +52,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     private TextView openNow, vicinity, distance, time, cartCount;
     private NetworkImageView groceryImage, profileImage;
     private Grocery grocery;
+    private boolean isPartner = true;
 
     private GroceryExpandableListAdapter listAdapter;
     private ExpandableListView expListView;
@@ -106,13 +107,13 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         pDialog.show();
 
         expListView = (ExpandableListView) findViewById(R.id.grocery_items_expandable);
-        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this);
+        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this, isPartner);
         expListView.setAdapter(listAdapter);
         groceryItemDBHandler = new GroceryItemDBHandler(pDialog, groceryDBItemsCallbackHandler);
         if (DataHolder.getInstance().getCategoryImageMapping().isEmpty())
             groceryItemDBHandler.getCategoryMapping();
         else groceryCategoriesMapping = DataHolder.getInstance().getCategoryImageMapping();
-        groceryItemDBHandler.parseChildren(grocery.getPlaceId());
+        groceryItemDBHandler.parseChildren(grocery.getPlaceId(), true);
     }
 
     public void getGroceryData() {
@@ -168,6 +169,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         }
     });
 
+
     private Handler groceryDBItemsCallbackHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -175,12 +177,18 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 groceryCategoriesMapping.clear();
                 groceryCategoriesMapping.putAll(groceryItemDBHandler.returnCategories());
                 DataHolder.getInstance().setCategoryImageMapping(groceryCategoriesMapping);
-                if (!listDataHeader.isEmpty())
+                if (!listDataChild.isEmpty())
                     listAdapter.notifyDataSetChanged();
             }
             else {
                 listDataChild.clear();
                 listDataChild.putAll(groceryItemDBHandler.returnDataChildren());
+                if (listDataChild.isEmpty()) {
+                    groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
+                    isPartner = false;
+                    pDialog.show();
+                    return false;
+                }
                 DataHolder.getInstance().setGroceryItemMapping(listDataChild);
                 listDataHeader.clear();
                 listDataHeader.addAll(listDataChild.keySet());

@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -105,37 +106,17 @@ public class GroceryListActivity extends AppCompatActivity {
         sortBy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Dialog sortDialog = new Dialog(GroceryListActivity.this);
-                sortDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                sortDialog.setContentView(R.layout.radio_button_dialog);
-                List<String> sortList = new ArrayList<>();
-                sortList.add("By Distance");
-                sortList.add("By Duration");
-                RadioGroup radioGroup = (RadioGroup) sortDialog.findViewById(R.id.radio_group);
-                for(int i=0;i<sortList.size();i++){
-                    RadioButton radioButton = new RadioButton(GroceryListActivity.this); // dynamically creating RadioButton and adding to RadioGroup.
-                    radioButton.setText(sortList.get(i));
-                    radioButton.setTextSize(20);
-                    radioButton.setPadding(30, 20, 30, 20);
-                    radioGroup.addView(radioButton);
-                }
-                sortDialog.show();
-                radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(RadioGroup group, int checkedId) {
-                        int childCount = group.getChildCount();
-                        for (int x = 0; x < childCount; x++) {
-                            RadioButton btn = (RadioButton) group.getChildAt(x);
-                            if (btn.getId() == checkedId) {
-                                //Log.e("selected RadioButton->",btn.getText().toString());
-                                Message message = new Message();
-                                message.arg1 = checkedId;
-                                sortHandler.sendMessage(new Message());
-                                sortDialog.dismiss();
-                            }
-                        }
+                PopupMenu popup = new PopupMenu(GroceryListActivity.this, sortBy);
+                popup.getMenuInflater().inflate(R.menu.sort_by_popup_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Message message = new Message();
+                        message.arg1 = item.getTitle().equals("By Distance") ? 0 : 1;
+                        sortHandler.sendMessage(new Message());
+                        return true;
                     }
                 });
+                popup.show();
             }
         });
     }
