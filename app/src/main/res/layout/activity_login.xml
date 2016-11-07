@@ -136,32 +136,22 @@
                 android:gravity="center_vertical|center_horizontal">
 
                 <TableRow>
-                    <Button
+                    <com.google.android.gms.common.SignInButton
                         android:id="@+id/google_sign_in_button"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="@string/action_google_sign_in"
-                        android:padding="7dp"
-                        android:textSize="10sp"
-                        android:drawableLeft="@drawable/google"
-                        android:drawablePadding="3dp"
-                        android:background="#FFFFFF"
+                        android:layout_height="match_parent"
+                        android:padding="12dp"
                         android:layout_weight="1"/>
-
-                    <Button
+                </TableRow>
+                <TableRow>
+                    <com.facebook.login.widget.LoginButton
                         android:id="@+id/fb_sign_in_button"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:text="@string/action_fb_sign_in"
-                        android:padding="7dp"
-                        android:textSize="10sp"
-                        android:textColor="#FFFFFF"
-                        android:background="#195FAD"
-                        android:drawablePadding="3dp"
-                        android:drawableLeft="@drawable/facebook"
-                        android:drawableTint="#FFFFFF"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:layout_margin="9dp"
+                        android:paddingTop="14dp"
+                        android:paddingBottom="14dp"
                         android:layout_weight="1"/>
                 </TableRow>
             </TableLayout>

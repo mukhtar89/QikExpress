@@ -38,4 +38,20 @@ public class Photo {
         retURL += "&key=" + key;
         return retURL;
     }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
+    }
+
+    public void setHtmlAttributions(String htmlAttributions) {
+        this.htmlAttributions = htmlAttributions;
+    }
+
+    public void setPhotoReference(String photoReference) {
+        this.photoReference = photoReference;
+    }
 }

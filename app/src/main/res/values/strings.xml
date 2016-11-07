@@ -25,4 +25,12 @@
     <string name="title_activity_google_sign_in">GoogleSignInActivity</string>
     <string name="grocery_activity_name">Grocery List</string>
     <string name="action_search">Search</string>
+    <string name="title_activity_grocery_item">GroceryItemActivity</string>
+    <string name="title_activity_info_review">InfoReview</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string name="facebook_app_id">267721446963213</string>
+    <string name="title_activity_wallet">WalletActivity</string>
+    <string name="title_activity_grocery_shopping_cart">Grocery Shopping Cart</string>
+
 </resources>

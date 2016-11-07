@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     private Button loginButton;
     private TextView loginName, loginEmail;
     private NetworkImageView loginImage;
+    private FrameLayout profileFrame;
     private RecyclerView recyclerView;
     private HybridLayoutManager layoutManager;
     private ImageLoader imageLoader = AppVolleyController.getInstance().getImageLoader();
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setIcon(R.drawable.logo);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -56,14 +59,17 @@ public class MainActivity extends AppCompatActivity
                 if (user == null) {
                     Log.d("AUTH", "OnAuthState: signed out");
                     loginButton.setVisibility(View.VISIBLE);
-                    loginImage.setVisibility(View.GONE);
+                    profileFrame.setVisibility(View.GONE);
                     loginEmail.setVisibility(View.GONE);
                     loginName.setVisibility(View.GONE);
                 } else {
                     Log.d("AUTH", "OnAuthState: Signed in " + user.getUid());
                     loginButton.setVisibility(View.GONE);
+                    loginEmail.setVisibility(View.VISIBLE);
+                    loginName.setVisibility(View.VISIBLE);
                     loginName.setText(user.getDisplayName());
                     loginEmail.setText(user.getEmail());
+                    profileFrame.setVisibility(View.VISIBLE);
                     if (user.getPhotoUrl() != null)
                         loginImage.setImageUrl(user.getPhotoUrl().toString(), imageLoader);
                 }
@@ -89,6 +95,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View navigationHeaderView = navigationView.getHeaderView(0);
+        profileFrame =(FrameLayout) navigationHeaderView.findViewById(R.id.profile_bundle);
         loginButton = (Button) navigationHeaderView.findViewById(R.id.login_button);
         loginName = (TextView) navigationHeaderView.findViewById(R.id.login_name);
         loginEmail = (TextView) navigationHeaderView.findViewById(R.id.login_email);
@@ -98,6 +105,12 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(loginIntent);
+            }
+        });
+        loginImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
             }
         });
 
@@ -133,34 +146,29 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(item.getItemId()) {
+            case R.id.action_settings:
+                return true;
+            case R.id.nav_wallet:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
-
         if (id == R.id.nav_wallet) {
-            // Handle the camera action
+            Intent walletIntent = new Intent(MainActivity.this, WalletActivity.class);
+            startActivity(walletIntent);
         } else if (id == R.id.nav_history) {
 
         } else if (id == R.id.nav_offer) {

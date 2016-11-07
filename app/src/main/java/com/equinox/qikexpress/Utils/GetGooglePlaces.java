@@ -49,9 +49,9 @@ public class GetGooglePlaces<T extends Place> {
 
     public void parsePlaces(final Location location, final Integer pagination) {
         placeList = new ArrayList<>();
-        String baseURL = "https://maps.googleapis.com/maps/api/place/search/json?";
+        String baseURL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
         String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*2000
-                + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
+                 + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
         JsonObjectRequest placeReq = new JsonObjectRequest(baseURL+urlArguments, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

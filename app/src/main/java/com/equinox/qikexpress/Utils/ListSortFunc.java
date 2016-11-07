@@ -19,6 +19,7 @@ public class ListSortFunc<T extends Place> {
     private T[] arrayList;
     private int size;
     private Handler handler;
+    private Message message;
 
     public ListSortFunc(Class<T> c, int s, Handler handler) {
         @SuppressWarnings("unchecked")
@@ -26,6 +27,7 @@ public class ListSortFunc<T extends Place> {
         this.arrayList = arrayList;
         this.size = s;
         this.handler = handler;
+        this.message = new Message();
     }
 
     public List<T> sortByDistance(final Object[] listItems) {
@@ -42,6 +44,27 @@ public class ListSortFunc<T extends Place> {
                 }
             }
         } catch (Exception e) {
+            message.arg1 = 0;
+            handler.sendMessage(new Message());
+        }
+        return Arrays.asList(arrayList);
+    }
+
+    public List<T> sortByTime(final Object[] listItems) {
+        try {
+            for (int i = 0; i < size; i++)
+                arrayList[i] = (T) listItems[i];
+            for (int i = 0; i < arrayList.length - 1; i++) {
+                for (int j = 0; j < arrayList.length - i - 1; j++) {
+                    if (arrayList[j].getTimeFromCurrent() > arrayList[j + 1].getTimeFromCurrent()) {
+                        T temp = arrayList[j];
+                        arrayList[j] = arrayList[j + 1];
+                        arrayList[j + 1] = temp;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            message.arg1 = 1;
             handler.sendMessage(new Message());
         }
         return Arrays.asList(arrayList);

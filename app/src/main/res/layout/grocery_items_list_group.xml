@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+        <com.android.volley.toolbox.NetworkImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:paddingStart="30dp"
+            android:id="@+id/grocery_category_header_image" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/grocery_item_group_name"
+            android:gravity="center_vertical|start"
+            android:textSize="20sp"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+
+</LinearLayout>

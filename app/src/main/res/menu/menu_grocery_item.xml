@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.equinox.qikexpress.Activities.GroceryItemActivity">
+
+    <item
+        android:id="@+id/action_cart"
+        android:orderInCategory="100"
+        app:actionLayout="@layout/actionbar_cart_icon"
+        android:icon="@drawable/ic_shopping_basket_white_48dp"
+        app:showAsAction="always"
+        android:title="0" />
+</menu>
