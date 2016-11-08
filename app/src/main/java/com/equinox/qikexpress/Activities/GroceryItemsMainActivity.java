@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -52,7 +53,6 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     private TextView openNow, vicinity, distance, time, cartCount;
     private NetworkImageView groceryImage, profileImage;
     private Grocery grocery;
-    private boolean isPartner = true;
 
     private GroceryExpandableListAdapter listAdapter;
     private ExpandableListView expListView;
@@ -106,8 +106,9 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         pDialog.setMessage("Loading...");
         pDialog.show();
 
+        DataHolder.getInstance().isPartner = true;
         expListView = (ExpandableListView) findViewById(R.id.grocery_items_expandable);
-        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this, isPartner);
+        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this);
         expListView.setAdapter(listAdapter);
         groceryItemDBHandler = new GroceryItemDBHandler(pDialog, groceryDBItemsCallbackHandler);
         if (DataHolder.getInstance().getCategoryImageMapping().isEmpty())
@@ -185,7 +186,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 listDataChild.putAll(groceryItemDBHandler.returnDataChildren());
                 if (listDataChild.isEmpty()) {
                     groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
-                    isPartner = false;
+                    DataHolder.getInstance().isPartner = false;
                     pDialog.show();
                     return false;
                 }

@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class GroceryItem {
 
-    private String groceryId;
+    private String groceryId, groceryName;
     private Integer groceryItemId;
     private Float groceryItemPriceValue;
     private String groceryItemName, groceryItemImage;
@@ -45,6 +45,13 @@ public class GroceryItem {
     public void setCatLevel(List<String> catLevel) {
         this.catLevel = catLevel;
     }
+    public String getGroceryName() {
+        return groceryName;
+    }
+
+    public void setGroceryName(String groceryName) {
+        this.groceryName = groceryName;
+    }
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -54,6 +61,7 @@ public class GroceryItem {
         result.put("groceryItemPriceValue", groceryItemPriceValue);
         result.put("groceryItemName", groceryItemName);
         result.put("groceryItemImage", groceryItemImage);
+        result.put("groceryName", groceryName);
         result.put("catLevel", catLevel);
         return result;
     }

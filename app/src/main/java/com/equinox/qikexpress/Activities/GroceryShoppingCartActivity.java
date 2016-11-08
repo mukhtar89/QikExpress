@@ -69,6 +69,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                         groceryItemCart = new GroceryItemCart();
                         groceryItemCart.setCatLevel((List<String>) iteratorObject.get("catLevel"));
                         groceryItemCart.setGroceryId((String) iteratorObject.get("groceryId"));
+                        groceryItemCart.setGroceryName((String) iteratorObject.get("groceryName"));
                         groceryItemCart.setGroceryItemId((int) (long) iteratorObject.get("groceryItemId"));
                         groceryItemCart.setGroceryItemName((String) iteratorObject.get("groceryItemName"));
                         groceryItemCart.setGroceryItemImage((String) iteratorObject.get("groceryItemImage"));
@@ -81,8 +82,10 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                         groceryItemCartList.add(groceryItemCart);
                     }
                     groceryCartRecyclerAdapter.notifyDataSetChanged();
-                    progressDialog.dismiss();
+                    Toast.makeText(GroceryShoppingCartActivity.this, "Swipe Left or Right to remove items from the Cart", Toast.LENGTH_LONG).show();
                 }
+                else Toast.makeText(GroceryShoppingCartActivity.this, "Cart is Empty! Shop and come again.", Toast.LENGTH_LONG).show();
+                progressDialog.dismiss();
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -96,8 +99,6 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         groceryShoppingList.setHasFixedSize(true);
         groceryCartRecyclerAdapter = new GroceryCartRecyclerAdapter(groceryItemCartList, groceryCart);
         groceryShoppingList.setAdapter(groceryCartRecyclerAdapter);
-
-        Toast.makeText(this, "Swipe Left or Right to remove items from the Cart", Toast.LENGTH_LONG).show();
 
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -124,7 +125,8 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                             groceryCart.child(itemCart.getGroceryId() + itemCart.getGroceryItemId()).removeValue();
                             groceryItemCartList.remove(position);
                             groceryCartRecyclerAdapter.notifyItemRemoved(position);
-                        }else groceryCartRecyclerAdapter.notifyDataSetChanged();
+                        }
+                        groceryCartRecyclerAdapter.notifyDataSetChanged();
                     }
                 });
             }

@@ -40,12 +40,7 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
     @Override
     public void onBindViewHolder(GroceryCartViewHolder holder, final int position) {
         final GroceryItemCart groceryItemCart = groceryItemCartList.get(position);
-        String groceryName = "";
-        for (Grocery grocery : DataHolder.getInstance().getGroceryList()) {
-            if (grocery.getPlaceId().equals(groceryItemCart.getGroceryId()))
-                groceryName = grocery.getName();
-        }
-        holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryName));
+        holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryItemCart.getGroceryName()));
         holder.getGroceryItemName().setText(groceryItemCart.getGroceryItemName());
         holder.getGroceryItemPrice().setText(groceryItemCart.getGroceryItemPriceValue() != null
                 ? groceryItemCart.getGroceryItemPriceValue().toString() : "N/A");
@@ -59,13 +54,13 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
                 groceryItemCartList.get(position).setSaveForLater(isChecked);
             }
         });
-        holder.getQuantityFetcher().setValue(groceryItemCart.getItemQuantity());
         holder.getQuantityFetcher().setMinValue(1);
         holder.getQuantityFetcher().setMaxValue(20);
         String [] degreesValues = new String [20];
         for(int i=0; i<20;i++)
             degreesValues[i] = String.valueOf(i+1);
         holder.getQuantityFetcher().setDisplayedValues(degreesValues);
+        holder.getQuantityFetcher().setValue(groceryItemCart.getItemQuantity());
         holder.getQuantityFetcher().setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {

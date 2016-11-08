@@ -28,6 +28,7 @@ public class DataHolder {
     private Map<String,String> categoryImageMapping = new HashMap<>();
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference userDatabaseReference = database.getReference(FirebaseAuth.getInstance().getCurrentUser().getUid());
+    public static Boolean isPartner;
 
     public DatabaseReference getUserDatabaseReference() {return userDatabaseReference;}
 
@@ -58,4 +59,12 @@ public class DataHolder {
 
     public void setGroceryItemMapping(HashMap<String, List<GroceryItem>> groceryItemMapping) {this.groceryItemMapping = groceryItemMapping;}
     public HashMap<String, List<GroceryItem>> getGroceryItemMapping() {return groceryItemMapping;}
+
+    public String getGroceryName(String groceryId) {
+        for (Grocery grocery : DataHolder.getInstance().getGroceryList()) {
+            if (grocery.getPlaceId().equals(groceryId))
+                return grocery.getName();
+        }
+        return null;
+    }
 }

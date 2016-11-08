@@ -42,15 +42,17 @@ public class GroceryItemActivity extends AppCompatActivity {
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
         Boolean isPartner = getIntent().getBooleanExtra("PARTNER", true);
-        if (isPartner) {
+        if (!isPartner) {
             Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout), "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
         groceryItemList1 = DataHolder.getInstance().getGroceryItemMapping().get(category1);
         groceryItemList2 = new ArrayList<>();
         for (GroceryItem item : groceryItemList1) {
             if (item.getCatLevel().size() > 1){
-                if (item.getCatLevel().get(1).equals(category2))
+                if (item.getCatLevel().get(1).equals(category2)) {
+                    item.setGroceryName(DataHolder.getInstance().getGroceryName(item.getGroceryId()));
                     groceryItemList2.add(item);
+                }
             }
         }
 

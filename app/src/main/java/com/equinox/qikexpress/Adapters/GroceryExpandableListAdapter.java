@@ -35,15 +35,13 @@ public class GroceryExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> listDataHeader; // header titles
     private Map<String,String> categoryImageMapping;
     private HashMap<String, List<GroceryItem>> listDataChild;
-    private Boolean isPartner;
 
     public GroceryExpandableListAdapter(List<String> listDataHeader, HashMap<String,
-            List<GroceryItem>> listChildData, Map<String, String> categoryImageMapping, Activity activity, boolean isPartner) {
+            List<GroceryItem>> listChildData, Map<String, String> categoryImageMapping, Activity activity) {
         this.activity = activity;
         this.listDataHeader = listDataHeader;
         this.listDataChild = listChildData;
         this.categoryImageMapping = categoryImageMapping;
-        this.isPartner = isPartner;
     }
 
     @Override
@@ -71,7 +69,8 @@ public class GroceryExpandableListAdapter extends BaseExpandableListAdapter {
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false);
         itemChildRecyclerView.setLayoutManager(layoutManager);
         itemChildRecyclerView.setHasFixedSize(true);
-        itemChildRecyclerView.setAdapter(new GroceryCategory2RecyclerAdapter(activity, categoryImageMapping, getLevel2Categories(groupPosition), listDataHeader.get(groupPosition), isPartner));
+        itemChildRecyclerView.setAdapter(new GroceryCategory2RecyclerAdapter(activity, categoryImageMapping,
+                getLevel2Categories(groupPosition), listDataHeader.get(groupPosition)));
         return convertView;
     }
 
