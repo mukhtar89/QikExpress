@@ -1,8 +1,8 @@
 package com.equinox.qikexpress.Activities;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -10,9 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.equinox.qikexpress.Adapters.GroceryCartRecyclerAdapter;
@@ -34,8 +32,9 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
     private List<GroceryItemCart> groceryItemCartList = new ArrayList<>();
     private RecyclerView groceryShoppingList;
     private ProgressDialog progressDialog;
-    private ItemTouchHelper.SimpleCallback simpleItemTouchCallback;
+    private ValueEventListener oneTimeListener;
     private GroceryCartRecyclerAdapter groceryCartRecyclerAdapter;
+    private DatabaseReference groceryCart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +47,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startActivity(new Intent(GroceryShoppingCartActivity.this, CheckoutActivity.class));
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -56,25 +55,25 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading Cart Items...");
         progressDialog.show();
 
-        final DatabaseReference groceryCart = DataHolder.getInstance().getUserDatabaseReference().child("grocery_cart").getRef();
-        groceryCart.addListenerForSingleValueEvent(new ValueEventListener() {
+        groceryCart = DataHolder.userDatabaseReference.child("grocery_cart").getRef();
+        oneTimeListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChildren()) {
                     Iterator<DataSnapshot> iteratorCart = dataSnapshot.getChildren().iterator();
                     HashMap<String, Object> iteratorObject;
                     GroceryItemCart groceryItemCart;
+                    groceryItemCartList.clear();
                     while (iteratorCart.hasNext()) {
                         iteratorObject = (HashMap<String, Object>) iteratorCart.next().getValue();
                         groceryItemCart = new GroceryItemCart();
-                        groceryItemCart.setCatLevel((List<String>) iteratorObject.get("catLevel"));
-                        groceryItemCart.setGroceryId((String) iteratorObject.get("groceryId"));
-                        groceryItemCart.setGroceryName((String) iteratorObject.get("groceryName"));
-                        groceryItemCart.setGroceryItemId((int) (long) iteratorObject.get("groceryItemId"));
-                        groceryItemCart.setGroceryItemName((String) iteratorObject.get("groceryItemName"));
-                        groceryItemCart.setGroceryItemImage((String) iteratorObject.get("groceryItemImage"));
-                        groceryItemCart.setGroceryItemPriceValue(iteratorObject.containsKey("groceryItemPriceValue")
-                                ? (float) (double) iteratorObject.get("groceryItemPriceValue") : null);
+                        groceryItemCart.setPlaceId((String) iteratorObject.get("placeId"));
+                        groceryItemCart.setPlaceName((String) iteratorObject.get("placeName"));
+                        groceryItemCart.setItemId((int) (long) iteratorObject.get("itemId"));
+                        groceryItemCart.setItemName((String) iteratorObject.get("itemName"));
+                        groceryItemCart.setItemImage((String) iteratorObject.get("itemImage"));
+                        groceryItemCart.setItemPriceValue(iteratorObject.containsKey("itemPriceValue")
+                                ? (float) (double) iteratorObject.get("itemPriceValue") : null);
                         groceryItemCart.setSaveForLater(iteratorObject.containsKey("saveForLater")
                                 ? (Boolean) iteratorObject.get("saveForLater") : false);
                         groceryItemCart.setItemQuantity(iteratorObject.containsKey("itemQuantity")
@@ -84,14 +83,19 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                     groceryCartRecyclerAdapter.notifyDataSetChanged();
                     Toast.makeText(GroceryShoppingCartActivity.this, "Swipe Left or Right to remove items from the Cart", Toast.LENGTH_LONG).show();
                 }
-                else Toast.makeText(GroceryShoppingCartActivity.this, "Cart is Empty! Shop and come again.", Toast.LENGTH_LONG).show();
+                else {
+                    Toast.makeText(GroceryShoppingCartActivity.this, "Cart is empty! Please shop for some items!", Toast.LENGTH_LONG).show();
+                    finish();
+                }
                 progressDialog.dismiss();
+
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Toast.makeText(GroceryShoppingCartActivity.this, "Cannot fetch Grocery Cart Items now!", Toast.LENGTH_LONG).show();
                 progressDialog.dismiss();  }
-        });
+        };
+        groceryCart.addListenerForSingleValueEvent(oneTimeListener);
 
 
         groceryShoppingList = (RecyclerView) findViewById(R.id.grocery_shopping_cart_list);
@@ -111,7 +115,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                 final int position = viewHolder.getLayoutPosition();
                 final GroceryItemCart itemCart = groceryItemCartList.get(position);
                 Snackbar removeCart = Snackbar.make(groceryShoppingList,
-                        itemCart.getGroceryItemName()+" removed from Cart", Snackbar.LENGTH_LONG)
+                        itemCart.getItemName()+" removed from Cart", Snackbar.LENGTH_LONG)
                         .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {}
@@ -122,7 +126,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                     public void onDismissed(Snackbar snackbar, int event) {
                         super.onDismissed(snackbar, event);
                         if (event == DISMISS_EVENT_TIMEOUT) {
-                            groceryCart.child(itemCart.getGroceryId() + itemCart.getGroceryItemId()).removeValue();
+                            groceryCart.child(itemCart.getPlaceId() + itemCart.getItemId()).removeValue();
                             groceryItemCartList.remove(position);
                             groceryCartRecyclerAdapter.notifyItemRemoved(position);
                         }
@@ -133,5 +137,11 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(groceryShoppingList);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        groceryCart.addListenerForSingleValueEvent(oneTimeListener);
     }
 }

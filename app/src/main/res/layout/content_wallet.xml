@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content_wallet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,5 +13,97 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.equinox.qikexpress.Activities.WalletActivity"
     tools:showIn="@layout/activity_wallet">
+    
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        card_view:cardUseCompatPadding="true"
+        card_view:cardElevation="6dp"
+        card_view:cardCornerRadius="3dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="60sp"
+                android:padding="40dp"
+                android:gravity="center|center_vertical|center_horizontal"
+                android:textColor="#ff8c00"
+                android:textStyle="bold"
+                android:text="0"
+                android:id="@+id/wallet_amount"/>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="true">
+                <TableRow>
+                    <LinearLayout
+                        android:layout_weight="6"
+                        android:orientation="horizontal"
+                        android:layout_height="match_parent"
+                        android:layout_width="match_parent"
+                        android:id="@+id/amount_manager"
+                        android:background="@color/colorPrimary" >
+                        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:id="@+id/credit_money_wallet"
+                            android:layout_weight="3">
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:src="@drawable/ic_account_balance_wallet_black_48dp"
+                                android:layout_gravity="center_vertical|end"
+                                android:layout_weight="1"
+                                android:tint="#FFFFFF"/>
+                            <Button
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Credit Amount"
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp"
+                                android:layout_gravity="center_vertical|start"
+                                android:layout_weight="2"
+                                style="@style/Widget.AppCompat.Button.Borderless" />
+                        </LinearLayout>
+                        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:id="@+id/debit_money_wallet"
+                            android:layout_weight="3">
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:src="@drawable/ic_account_balance_wallet_black_48dp"
+                                android:layout_gravity="center_vertical|end"
+                                android:layout_weight="1"
+                                android:tint="#FFFFFF"/>
+                            <Button
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Debit Amount"
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp"
+                                android:layout_gravity="center_vertical|start"
+                                android:layout_weight="2"
+                                style="@style/Widget.AppCompat.Button.Borderless" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
 
 </RelativeLayout>

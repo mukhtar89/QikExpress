@@ -31,20 +31,21 @@ public class GroceryCategory2RecyclerAdapter extends RecyclerView.Adapter<Grocer
     private Activity activity;
     private Map<String,String> categoryImageMap;
     private List<String> category2List;
-    private String category1;
+    private String category1, placeId;
 
     public GroceryCategory2RecyclerAdapter(Activity groceryListActivity, Map<String, String> categoryImageMap,
-                                           List<String> category2List, String category1) {
+                                           List<String> category2List, String category1, String placeId) {
         this.activity = groceryListActivity;
         this.categoryImageMap = categoryImageMap;
         this.category2List = category2List;
         this.category1 = category1;
+        this.placeId = placeId;
     }
 
     @Override
     public GroceryCategory2RecyclerViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
             final View holder = LayoutInflater.from(parent.getContext()).inflate(R.layout.grocery_category2_child_items, parent, false);
-            return new GroceryCategory2RecyclerViewHolder(holder, activity, category2List, category1);
+            return new GroceryCategory2RecyclerViewHolder(holder, activity, category2List, category1, placeId);
     }
 
     @Override

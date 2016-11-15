@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.equinox.qikexpress.Adapters.GroceryListRecyclerAdapter;
 import com.equinox.qikexpress.Enums.QikList;
@@ -50,11 +51,6 @@ public class GroceryListActivity extends AppCompatActivity {
     private List<Grocery> groceryList = new ArrayList<>();
     private ProgressDialog pDialog;
     private GroceryListRecyclerAdapter listRecyclerAdapter;
-    private LocationPermission locationPermission;
-    private final Location[] location = new Location[1];
-    private LocationManager locationManager;
-    private Handler handlerLocation;
-    private Handler.Callback locationCallback;
     private LinearLayout sortBy, filterBy;
     private TextView cartCount;
 
@@ -67,58 +63,43 @@ public class GroceryListActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        pDialog = new ProgressDialog(this);
-        // Showing progress dialog before making http request
-        pDialog.setMessage("Loading...");
-        pDialog.show();
+        if (DataHolder.location == null) {
+            Toast.makeText(this, "Please turn on your Location!", Toast.LENGTH_LONG).show();
+            finish();
+        } else {
+            pDialog = new ProgressDialog(this);
+            // Showing progress dialog before making http request
+            pDialog.setMessage("Loading...");
+            pDialog.show();
 
-        getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, pDialog, new Handler[]{loopUntilLoad, updateDataListView});
+            getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, pDialog, new Handler[]{loopUntilLoad, updateDataListView});
+            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
 
-        locationPermission = new LocationPermission(this, this);
-        final Location[] locationFetched = {getMyLocation()};
-        if (locationFetched[0] != null) {
-            getGooglePlaces.parsePlaces(locationFetched[0], pagination);
-            location[0] = locationFetched[0];
-        }
-        locationCallback = new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                if (msg.arg1 == 1) {
-                    if (locationPermission.checkLocationPermission()) {
-                        location[0] = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        locationFetched[0] = location[0];
-                        getGooglePlaces.parsePlaces(locationFetched[0], pagination);
-                    }
+            layoutManager = new HybridLayoutManager(this);
+            listRecyclerAdapter = new GroceryListRecyclerAdapter(this, groceryList, DataHolder.location, loadMoreAction);
+            recyclerView = (RecyclerView) findViewById(R.id.grocery_grid_view);
+            recyclerView.setLayoutManager(layoutManager.getLayoutManager(300));
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setAdapter(listRecyclerAdapter);
+
+            sortBy = (LinearLayout) findViewById(R.id.sort_by);
+            sortBy.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popup = new PopupMenu(GroceryListActivity.this, sortBy);
+                    popup.getMenuInflater().inflate(R.menu.sort_by_popup_menu, popup.getMenu());
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        public boolean onMenuItemClick(MenuItem item) {
+                            Message message = new Message();
+                            message.arg1 = item.getTitle().equals("By Distance") ? 0 : 1;
+                            sortHandler.sendMessage(new Message());
+                            return true;
+                        }
+                    });
+                    popup.show();
                 }
-                else location[0] = null;
-                return false;
-            }
-        };
-
-        layoutManager = new HybridLayoutManager(this);
-        listRecyclerAdapter = new GroceryListRecyclerAdapter(this, groceryList, location[0], loadMoreAction);
-        recyclerView = (RecyclerView) findViewById(R.id.grocery_grid_view);
-        recyclerView.setLayoutManager(layoutManager.getLayoutManager(300));
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(listRecyclerAdapter);
-
-        sortBy = (LinearLayout) findViewById(R.id.sort_by);
-        sortBy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popup = new PopupMenu(GroceryListActivity.this, sortBy);
-                popup.getMenuInflater().inflate(R.menu.sort_by_popup_menu, popup.getMenu());
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem item) {
-                        Message message = new Message();
-                        message.arg1 = item.getTitle().equals("By Distance") ? 0 : 1;
-                        sortHandler.sendMessage(new Message());
-                        return true;
-                    }
-                });
-                popup.show();
-            }
-        });
+            });
+        }
     }
 
     private Handler sortHandler = new Handler(new Handler.Callback() {
@@ -141,7 +122,7 @@ public class GroceryListActivity extends AppCompatActivity {
             if (!pDialog.isShowing())
                 pDialog.show();
             pagination++;
-            getGooglePlaces.parsePlaces(location[0], pagination);
+            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
             return false;
         }
     });
@@ -150,7 +131,7 @@ public class GroceryListActivity extends AppCompatActivity {
         @Override
         public boolean handleMessage(Message msg) {
             pagination++;
-            getGooglePlaces.parsePlaces(location[0], pagination);
+            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
             return false;
         }
     });
@@ -160,7 +141,7 @@ public class GroceryListActivity extends AppCompatActivity {
         public boolean handleMessage(Message msg) {
             groceryList.addAll(getGooglePlaces.returnPlaceList());
             listRecyclerAdapter.notifyDataSetChanged();
-            DataHolder.getInstance().setGroceryList(groceryList);
+            DataHolder.groceryList = groceryList;
             DataHolder.getInstance().setGroceryMap();
             return false;
         }
@@ -183,7 +164,7 @@ public class GroceryListActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.shop_menu, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.getInstance().getUserDatabaseReference().child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
+        DataHolder.userDatabaseReference.child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
@@ -215,17 +196,5 @@ public class GroceryListActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public Location getMyLocation() {
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        handlerLocation = new Handler(locationCallback);
-        if (locationPermission.checkLocationPermission())
-            location[0] = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-        else {
-            hidePDialog();
-            locationPermission.getLocationPermission(handlerLocation);
-        }
-        return location[0];
     }
 }

@@ -30,7 +30,8 @@
     <string name="section_format">Hello World from section: %1$d</string>
 
     <string name="facebook_app_id">267721446963213</string>
-    <string name="title_activity_wallet">WalletActivity</string>
+    <string name="title_activity_wallet">My Wallet</string>
     <string name="title_activity_grocery_shopping_cart">Grocery Cart</string>
+    <string name="title_activity_checkout">Check Out</string>
 
 </resources>

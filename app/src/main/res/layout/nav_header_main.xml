@@ -15,6 +15,7 @@
         android:text="Login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:id="@+id/login_button"
         style="@style/Widget.AppCompat.Button.Small"
         android:backgroundTint="@android:color/holo_red_dark"

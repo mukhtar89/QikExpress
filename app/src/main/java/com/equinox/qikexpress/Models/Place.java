@@ -10,7 +10,7 @@ public class Place {
 
     private String placeId, name, vicinity;
     private LatLng location;
-    private Boolean openNow;
+    private Boolean openNow, isPartner;
     private Photo photo;
     private Float distanceFromCurrent;
     private Integer timeFromCurrent;
@@ -68,5 +68,10 @@ public class Place {
         return photo;
     }
     public void setPhoto(Photo photo) { this.photo = photo;  }
-
+    public Boolean getPartner() {
+        return isPartner;
+    }
+    public void setPartner(Boolean partner) {
+        isPartner = partner;
+    }
 }

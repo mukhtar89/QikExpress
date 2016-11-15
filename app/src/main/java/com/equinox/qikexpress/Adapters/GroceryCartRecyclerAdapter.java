@@ -8,12 +8,14 @@ import android.widget.CompoundButton;
 import android.widget.NumberPicker;
 
 import com.equinox.qikexpress.Models.DataHolder;
-import com.equinox.qikexpress.Models.Grocery;
 import com.equinox.qikexpress.Models.GroceryItemCart;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.StringManipulation;
 import com.equinox.qikexpress.ViewHolders.GroceryCartViewHolder;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -40,18 +42,28 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
     @Override
     public void onBindViewHolder(GroceryCartViewHolder holder, final int position) {
         final GroceryItemCart groceryItemCart = groceryItemCartList.get(position);
-        holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryItemCart.getGroceryName()));
-        holder.getGroceryItemName().setText(groceryItemCart.getGroceryItemName());
-        holder.getGroceryItemPrice().setText(groceryItemCart.getGroceryItemPriceValue() != null
-                ? groceryItemCart.getGroceryItemPriceValue().toString() : "N/A");
-        holder.getGroceryItemImage().setImageUrl(groceryItemCart.getGroceryItemImage(),
+        final String databaseKey = groceryItemCart.getPlaceId()+groceryItemCart.getItemId();
+        holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryItemCart.getPlaceName()));
+        holder.getGroceryItemName().setText(groceryItemCart.getItemName());
+        holder.getGroceryItemPrice().setText(groceryItemCart.getItemPriceValue() != null
+                ? DataHolder.localCurrency + " " + groceryItemCart.getItemPriceValue().toString() : "N/A");
+        holder.getGroceryItemImage().setImageUrl(groceryItemCart.getItemImage(),
                 DataHolder.getInstance().getImageLoader());
         holder.getSaveForLaterSwitch().setChecked(groceryItemCart.getSaveForLater());
         holder.getSaveForLaterSwitch().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                groceryCart.child(groceryItemCart.getGroceryId()+groceryItemCart.getGroceryItemId()).child("saveForLater").setValue(isChecked);
-                groceryItemCartList.get(position).setSaveForLater(isChecked);
+            public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
+            groceryCart.child(databaseKey).getRef().addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild("itemId")) {
+                        groceryCart.child(databaseKey).child("saveForLater").setValue(isChecked);
+                        groceryItemCartList.get(position).setSaveForLater(isChecked);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {    }
+            });
             }
         });
         holder.getQuantityFetcher().setMinValue(1);
@@ -64,7 +76,7 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
         holder.getQuantityFetcher().setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                groceryCart.child(groceryItemCart.getGroceryId()+groceryItemCart.getGroceryItemId()).child("itemQuantity").setValue(newVal);
+                groceryCart.child(databaseKey).child("itemQuantity").setValue(newVal);
                 groceryItemCartList.get(position).setItemQuantity(newVal);
             }
         });

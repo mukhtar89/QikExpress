@@ -54,7 +54,7 @@ public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder imple
     public void onClick(View v) {
         int itemPosition = getLayoutPosition();
         Intent itemIntent = new Intent(activity, GroceryItemsMainActivity.class);
-        itemIntent.putExtra("PLACE_ID", DataHolder.getInstance().getGroceryList().get(itemPosition).getPlaceId());
+        itemIntent.putExtra("PLACE_ID", DataHolder.groceryList.get(itemPosition).getPlaceId());
         activity.startActivity(itemIntent);
     }
 }

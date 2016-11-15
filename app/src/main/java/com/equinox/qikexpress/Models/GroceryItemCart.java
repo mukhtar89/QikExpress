@@ -6,17 +6,7 @@ package com.equinox.qikexpress.Models;
 
 public class GroceryItemCart extends GroceryItem {
 
-    private Integer itemQuantity;
     private Boolean saveForLater;
-
-
-    public Integer getItemQuantity() {
-        return itemQuantity;
-    }
-
-    public void setItemQuantity(Integer itemQuantity) {
-        this.itemQuantity = itemQuantity;
-    }
 
     public Boolean getSaveForLater() {
         return saveForLater;

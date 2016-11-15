@@ -106,14 +106,14 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         pDialog.setMessage("Loading...");
         pDialog.show();
 
-        DataHolder.getInstance().isPartner = true;
+        grocery.setPartner(true);
         expListView = (ExpandableListView) findViewById(R.id.grocery_items_expandable);
-        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this);
+        listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this, grocery.getPlaceId());
         expListView.setAdapter(listAdapter);
         groceryItemDBHandler = new GroceryItemDBHandler(pDialog, groceryDBItemsCallbackHandler);
-        if (DataHolder.getInstance().getCategoryImageMapping().isEmpty())
+        if (DataHolder.categoryImageMapping.isEmpty())
             groceryItemDBHandler.getCategoryMapping();
-        else groceryCategoriesMapping = DataHolder.getInstance().getCategoryImageMapping();
+        else groceryCategoriesMapping = DataHolder.categoryImageMapping;
         groceryItemDBHandler.parseChildren(grocery.getPlaceId(), true);
     }
 
@@ -177,7 +177,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             if (msg.arg1 == 0) {
                 groceryCategoriesMapping.clear();
                 groceryCategoriesMapping.putAll(groceryItemDBHandler.returnCategories());
-                DataHolder.getInstance().setCategoryImageMapping(groceryCategoriesMapping);
+                DataHolder.categoryImageMapping = groceryCategoriesMapping;
                 if (!listDataChild.isEmpty())
                     listAdapter.notifyDataSetChanged();
             }
@@ -186,11 +186,11 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 listDataChild.putAll(groceryItemDBHandler.returnDataChildren());
                 if (listDataChild.isEmpty()) {
                     groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
-                    DataHolder.getInstance().isPartner = false;
+                    grocery.setPartner(false);
                     pDialog.show();
                     return false;
                 }
-                DataHolder.getInstance().setGroceryItemMapping(listDataChild);
+                DataHolder.groceryItemMapping = listDataChild;
                 listDataHeader.clear();
                 listDataHeader.addAll(listDataChild.keySet());
                 if (!groceryCategoriesMapping.isEmpty())
@@ -205,7 +205,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_grocery_item_main, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.getInstance().getUserDatabaseReference().child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
+        DataHolder.userDatabaseReference.child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
@@ -218,6 +218,14 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {}
+        });
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent groceryShoppingCartIntent = new Intent(GroceryItemsMainActivity.this, GroceryShoppingCartActivity.class);
+                startActivity(groceryShoppingCartIntent);
+            }
         });
         return true;
     }

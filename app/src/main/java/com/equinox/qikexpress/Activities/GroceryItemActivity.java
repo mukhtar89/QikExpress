@@ -1,5 +1,6 @@
 package com.equinox.qikexpress.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -41,16 +42,17 @@ public class GroceryItemActivity extends AppCompatActivity {
 
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
-        Boolean isPartner = getIntent().getBooleanExtra("PARTNER", true);
-        if (!isPartner) {
-            Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout), "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
+        String placeId = getIntent().getStringExtra("PLACE_ID");
+        if (!DataHolder.getInstance().getGroceryMap().get(placeId).getPartner()) {
+            Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout),
+                    "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
-        groceryItemList1 = DataHolder.getInstance().getGroceryItemMapping().get(category1);
+        groceryItemList1 = DataHolder.groceryItemMapping.get(category1);
         groceryItemList2 = new ArrayList<>();
         for (GroceryItem item : groceryItemList1) {
             if (item.getCatLevel().size() > 1){
                 if (item.getCatLevel().get(1).equals(category2)) {
-                    item.setGroceryName(DataHolder.getInstance().getGroceryName(item.getGroceryId()));
+                    item.setPlaceName(DataHolder.getInstance().getGroceryName(item.getPlaceId()));
                     groceryItemList2.add(item);
                 }
             }
@@ -71,7 +73,7 @@ public class GroceryItemActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_grocery_item, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.getInstance().getUserDatabaseReference().child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
+        DataHolder.userDatabaseReference.child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
@@ -84,6 +86,14 @@ public class GroceryItemActivity extends AppCompatActivity {
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {}
+        });
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
+                startActivity(groceryShoppingCartIntent);
+            }
         });
         return true;
     }

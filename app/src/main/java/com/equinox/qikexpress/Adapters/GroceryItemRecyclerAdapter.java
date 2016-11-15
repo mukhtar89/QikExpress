@@ -2,22 +2,18 @@ package com.equinox.qikexpress.Adapters;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
 
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GroceryItem;
-import com.equinox.qikexpress.Models.GroceryItemCart;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.ViewHolders.GroceryItemRecyclerViewHolder;
 import com.google.firebase.database.DataSnapshot;
@@ -29,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.R.id.message;
-
 /**
  * Created by mukht on 11/5/2016.
  */
@@ -38,7 +32,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
 
     private Activity activity;
     private List<GroceryItem> groceryList;
-    private DatabaseReference userDatabaseReference = DataHolder.getInstance().getUserDatabaseReference();
+    private DatabaseReference userDatabaseReference = DataHolder.userDatabaseReference;
     private DatabaseReference groceryItemCart;
     private String categoryChain;
 
@@ -59,14 +53,15 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
     public void onBindViewHolder(final GroceryItemRecyclerViewHolder holder, final int position) {
         final GroceryItem groceryItem = groceryList.get(position);
         final Boolean[] addedToCart = {false};
-        if (groceryItem.getGroceryItemImage() != null)
-            holder.getItemImg().setImageUrl(groceryItem.getGroceryItemImage(), DataHolder.getInstance().getImageLoader());
-        holder.getGroceryItemName().setText(groceryItem.getGroceryItemName());
-        holder.getGroceryItemPrice().setText(groceryItem.getGroceryItemPriceValue() == null ? "N/A" : groceryItem.getGroceryItemPriceValue().toString());
+        if (groceryItem.getItemImage() != null)
+            holder.getItemImg().setImageUrl(groceryItem.getItemImage(), DataHolder.getInstance().getImageLoader());
+        holder.getGroceryItemName().setText(groceryItem.getItemName());
+        holder.getGroceryItemPrice().setText(groceryItem.getItemPriceValue() == null
+                ? "N/A" : DataHolder.localCurrency + " " + groceryItem.getItemPriceValue().toString());
         groceryItemCart.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(groceryItem.getGroceryId()+groceryItem.getGroceryItemId())) {
+                if (dataSnapshot.hasChild(groceryItem.getPlaceId()+groceryItem.getItemId())) {
                     addedToCart[0] = true;
                     holder.getFabAddCart().setImageResource(R.drawable.ic_remove_shopping_cart_white_48dp);
                 }
@@ -86,15 +81,15 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
                             .setAction("Action", null).show();
                     Map<String, Object> groceryItemMap = groceryItem.toMap();
                     Map<String, Object> cartItemAdd = new HashMap<>();
-                    cartItemAdd.put(groceryItem.getGroceryId()+groceryItem.getGroceryItemId(), groceryItemMap);
+                    cartItemAdd.put(groceryItem.getPlaceId()+groceryItem.getItemId(), groceryItemMap);
                     groceryItemCart.updateChildren(cartItemAdd);
-                    groceryItemCart.child(groceryItem.getGroceryId()+groceryItem.getGroceryItemId()).child("itemQuantity").setValue(msg.arg1);
+                    groceryItemCart.child(groceryItem.getPlaceId()+groceryItem.getItemId()).child("itemQuantity").setValue(msg.arg1);
                     holder.getFabAddCart().setImageResource(R.drawable.ic_remove_shopping_cart_white_48dp);
                 }
                 else {
                     Snackbar.make(holder.getItemCardGrocery(), "Removed from Cart", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
-                    groceryItemCart.child(groceryItem.getGroceryId()+groceryItem.getGroceryItemId()).removeValue();
+                    groceryItemCart.child(groceryItem.getPlaceId()+groceryItem.getItemId()).removeValue();
                     holder.getFabAddCart().setImageResource(R.drawable.ic_add_shopping_cart_white_48dp);
                 }
                 return false;

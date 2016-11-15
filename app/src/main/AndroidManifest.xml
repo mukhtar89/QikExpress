@@ -88,6 +88,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.equinox.qikexpress.Activities.GroceryListActivity" />
         </activity>
+        <activity
+            android:name=".Activities.CheckoutActivity"
+            android:label="@string/title_activity_checkout"
+            android:parentActivityName=".Activities.GroceryShoppingCartActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.equinox.qikexpress.Activities.GroceryShoppingCartActivity" />
+        </activity>
     </application>
 
 </manifest>

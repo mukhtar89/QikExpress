@@ -11,8 +11,8 @@
             android:id="@+id/sort_by"
             style="@style/Widget.AppCompat.Button.Borderless" >
             <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_sort_by_alpha_white_48dp"
                 android:layout_gravity="center_vertical|right"
@@ -34,8 +34,8 @@
             android:id="@+id/filter_by"
             style="@style/Widget.AppCompat.Button.Borderless" >
             <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_filter_list_white_48dp"
                 android:layout_gravity="center_vertical|right"
@@ -58,8 +58,8 @@
             android:id="@+id/search_by"
             style="@style/Widget.AppCompat.Button.Borderless" >
             <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_weight="1"
                 android:src="@drawable/ic_search_white_48dp"
                 android:layout_gravity="center_vertical|right"

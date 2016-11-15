@@ -30,8 +30,6 @@
 
         </android.support.design.widget.AppBarLayout>
 
-
-
         <include layout="@layout/content_grocery" />
 
         <android.support.design.widget.FloatingActionButton

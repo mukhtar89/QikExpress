@@ -1,7 +1,10 @@
 package com.equinox.qikexpress.Activities;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -18,15 +21,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.equinox.qikexpress.Adapters.MainRecyclerViewAdapter;
+import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.R;
-import com.equinox.qikexpress.Utils.AppVolleyController;
+import com.equinox.qikexpress.Utils.FusedLocationService;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
+import com.equinox.qikexpress.Utils.LocationPermission;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -41,7 +46,9 @@ public class MainActivity extends AppCompatActivity
     private FrameLayout profileFrame;
     private RecyclerView recyclerView;
     private HybridLayoutManager layoutManager;
-    private ImageLoader imageLoader = AppVolleyController.getInstance().getImageLoader();
+    private LocationPermission locationPermission;
+    private GoogleApiClient mGoogleApiClient;
+    private FusedLocationService fusedLocationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,14 +71,20 @@ public class MainActivity extends AppCompatActivity
                     loginName.setVisibility(View.GONE);
                 } else {
                     Log.d("AUTH", "OnAuthState: Signed in " + user.getUid());
+                    DataHolder.userDatabaseReference =
+                            DataHolder.database.getReference(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    DataHolder.getInstance().setRole("consumer");
+                    DataHolder.getInstance().generateMetadata();
                     loginButton.setVisibility(View.GONE);
                     loginEmail.setVisibility(View.VISIBLE);
                     loginName.setVisibility(View.VISIBLE);
                     loginName.setText(user.getDisplayName());
                     loginEmail.setText(user.getEmail());
                     profileFrame.setVisibility(View.VISIBLE);
-                    if (user.getPhotoUrl() != null)
-                        loginImage.setImageUrl(user.getPhotoUrl().toString(), imageLoader);
+                    if (user.getPhotoUrl() != null){
+                        profileFrame.setVisibility(View.VISIBLE);
+                        loginImage.setImageUrl(user.getPhotoUrl().toString(), DataHolder.getInstance().getImageLoader());
+                    }
                 }
             }
         };
@@ -116,22 +129,28 @@ public class MainActivity extends AppCompatActivity
 
         layoutManager = new HybridLayoutManager(this);
         recyclerView = (RecyclerView) findViewById(R.id.main_grid_view);
-        recyclerView.setLayoutManager(layoutManager.getLayoutManager(200));
+        recyclerView.setLayoutManager(layoutManager.getLayoutManager(150));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(new MainRecyclerViewAdapter(this));
+
+        locationPermission = new LocationPermission(this, this);
+        fusedLocationService = new FusedLocationService(this, locationPermission, locationHandler);
+        mGoogleApiClient = fusedLocationService.buildGoogleApiClient();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
+        mGoogleApiClient.connect();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(mAuthListener != null)
+        if (mAuthListener != null)
             mAuth.removeAuthStateListener(mAuthListener);
+        mGoogleApiClient.disconnect();
     }
 
     @Override
@@ -184,5 +203,32 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private Handler locationHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (DataHolder.location == null)
+                DataHolder.location = fusedLocationService.returnLocation();
+            DataHolder.getInstance().generateMetadata();
+            return true;
+        }
+    });
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(MainActivity.this, "Location is Set!", Toast.LENGTH_LONG).show();
+                } else {
+                    locationPermission = new LocationPermission(this, this);
+                    locationPermission.getLocationPermission();
+                    Toast.makeText(MainActivity.this, "Location Access is Denied!", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
     }
 }

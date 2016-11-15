@@ -90,12 +90,12 @@ public class GroceryItemDBHandler {
                         for (int i = 0; i < categoryArray.length(); i++) {
                             JSONObject groceryItemObject = categoryArray.getJSONObject(i);
                             GroceryItem groceryItem = new GroceryItem();
-                            groceryItem.setGroceryId(placeId);
-                            if (isPartner) groceryItem.setGroceryItemPriceValue((float) groceryItemObject.getDouble("groceryItemPriceValue"));
-                            groceryItem.setGroceryItemId(groceryItemObject.getInt("groceryItemId"));
-                            groceryItem.setGroceryItemName(groceryItemObject.getString("groceryItemName"));
+                            groceryItem.setPlaceId(placeId);
+                            if (isPartner) groceryItem.setItemPriceValue((float) groceryItemObject.getDouble("groceryItemPriceValue"));
+                            groceryItem.setItemId(groceryItemObject.getInt("groceryItemId"));
+                            groceryItem.setItemName(groceryItemObject.getString("groceryItemName"));
                             if (groceryItemObject.has("groceryItemImage"))
-                                groceryItem.setGroceryItemImage(groceryItemObject.getString("groceryItemImage"));
+                                groceryItem.setItemImage(groceryItemObject.getString("groceryItemImage"));
                             List<String> categories = new ArrayList<>();
                             for (int j=1; j<=4; j++) {
                                 if (groceryItemObject.has("catLev" + j))

@@ -25,12 +25,14 @@ public class GroceryCategory2RecyclerViewHolder extends RecyclerView.ViewHolder 
     private Activity activity;
     private String category1;
     private List<String> category2List;
+    private String placeId;
 
-    public GroceryCategory2RecyclerViewHolder(View itemView, Activity activity, List<String> category2List, String category1) {
+    public GroceryCategory2RecyclerViewHolder(View itemView, Activity activity, List<String> category2List, String category1, String placeId) {
         super(itemView);
         this.activity = activity;
         this.category1 = category1;
         this.category2List = category2List;
+        this.placeId = placeId;
         category2Card = (CardView) itemView.findViewById(R.id.grocery_category2_card);
         groceryCategory2Name = (TextView) itemView.findViewById(R.id.grocery_category2_name);
         category2Img = (NetworkImageView) itemView.findViewById(R.id.grocery_category2_image);
@@ -52,7 +54,7 @@ public class GroceryCategory2RecyclerViewHolder extends RecyclerView.ViewHolder 
         Intent itemIntent = new Intent(activity, GroceryItemActivity.class);
         itemIntent.putExtra("CATEGORY1", category1);
         itemIntent.putExtra("CATEGORY2", category2List.get(getLayoutPosition()));
-        itemIntent.putExtra("PARTNER", DataHolder.getInstance().isPartner);
+        itemIntent.putExtra("PLACE_ID", placeId);
         activity.startActivity(itemIntent);
     }
 }

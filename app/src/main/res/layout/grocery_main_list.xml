@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/grocery_name"
                 android:gravity="center_vertical|center_horizontal|center"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:padding="5dp" />
@@ -59,7 +59,7 @@
                 android:text="Calculating..."
                 android:id="@+id/grocery_dist"
                 android:gravity="center_vertical|center_horizontal|center"
-                android:textSize="15sp"
+                android:textSize="13sp"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:padding="5dp" />

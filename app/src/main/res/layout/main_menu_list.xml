@@ -4,7 +4,7 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="150dp"
     android:id="@+id/listCard"
     android:layout_margin="3dp"
     card_view:cardUseCompatPadding="true"
@@ -19,7 +19,7 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="80dp"
             android:paddingTop="30dp"
             android:paddingBottom="20dp"
             android:gravity="center_horizontal|center"
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/card_text"
             android:gravity="center_vertical|center_horizontal|center"
-            android:textSize="25sp"
+            android:textSize="22sp"
             android:textColor="#FFFFFF"
             android:textStyle="bold"/>
 
