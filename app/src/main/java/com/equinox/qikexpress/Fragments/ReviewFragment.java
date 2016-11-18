@@ -11,14 +11,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.equinox.qikexpress.Adapters.ReviewRecyclerAdapter;
+import com.equinox.qikexpress.Models.Place;
 import com.equinox.qikexpress.Models.RatingsManager;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.GetPlaceDetails;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
 
 /**
  * Created by mukht on 11/2/2016.
@@ -26,21 +31,22 @@ import java.util.ArrayList;
 
 public class ReviewFragment extends Fragment {
 
-    private static ArrayList<RatingsManager> ratingsList;
-    private static GetPlaceDetails getPlaceDetails;
-    private static ProgressDialog pDialog;
-    private static ReviewRecyclerAdapter reviewRecyclerAdapter;
-    private static RecyclerView reviewRecyclerView;
+    private ArrayList<RatingsManager> ratingsList = new ArrayList<>();
+    private GetPlaceDetails getPlaceDetails;
+    private ProgressDialog pDialog;
+    private ReviewRecyclerAdapter reviewRecyclerAdapter;
+    private RecyclerView reviewRecyclerView;
+    private Handler updateDataListView;
 
     /**
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static ReviewFragment newInstance(String placeId) {
+    public static ReviewFragment newInstance(final String placeId) {
         ReviewFragment fragment = new ReviewFragment();
-        ratingsList = new ArrayList<>();
-        getPlaceDetails = new GetPlaceDetails(pDialog, updateDataListView);
-        getPlaceDetails.parseDetail(placeId);
+        Bundle args = new Bundle();
+        args.putString(PLACE_ID, placeId);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -55,6 +61,19 @@ public class ReviewFragment extends Fragment {
         pDialog = new ProgressDialog(getActivity());
         pDialog.setMessage("Loading...");
         pDialog.show();
+        updateDataListView = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (getPlaceDetails.returnRatingsList(getArguments().getString(PLACE_ID)) != null) {
+                    ratingsList.addAll(getPlaceDetails.returnRatingsList(getArguments().getString(PLACE_ID)));
+                    reviewRecyclerAdapter.notifyDataSetChanged();
+                } else Toast.makeText(getActivity(), "No Reviews are available for this Place!", Toast.LENGTH_LONG).show();
+                hidePDialog();
+                return false;
+            }
+        });
+        getPlaceDetails = new GetPlaceDetails(pDialog, updateDataListView);
+        getPlaceDetails.parseDetail(getArguments().getString(PLACE_ID));
         return rootView;
     }
 
@@ -65,17 +84,7 @@ public class ReviewFragment extends Fragment {
             hidePDialog();
     }
 
-    private static Handler updateDataListView = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            ratingsList.addAll(getPlaceDetails.returnRatingsList());
-            reviewRecyclerAdapter.notifyDataSetChanged();
-            hidePDialog();
-            return false;
-        }
-    });
-
-    private static void hidePDialog() {
+    private void hidePDialog() {
         if (pDialog != null)
             pDialog.dismiss();
     }

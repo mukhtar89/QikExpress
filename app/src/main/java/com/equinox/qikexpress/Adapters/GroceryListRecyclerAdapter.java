@@ -63,9 +63,11 @@ public class GroceryListRecyclerAdapter extends RecyclerView.Adapter<RecyclerVie
                 if (holder instanceof GroceryListRecyclerViewHolder) {
                     final Grocery grocery = groceryList.get(position);
                     ((GroceryListRecyclerViewHolder) holder).getGroceryName().setText(StringManipulation.CapsFirst(grocery.getName()));
-                    String photoURL = grocery.getPhoto().returnApiUrl(Constants.PLACES_API_KEY);
-                    if (!photoURL.isEmpty())
-                        ((GroceryListRecyclerViewHolder) holder).getBackImg().setImageUrl(photoURL, DataHolder.getInstance().getImageLoader());
+                    if (grocery.getPhoto() != null) {
+                        String photoURL = grocery.getPhoto().returnApiUrl(Constants.PLACES_API_KEY);
+                        if (!photoURL.isEmpty())
+                            ((GroceryListRecyclerViewHolder) holder).getBackImg().setImageUrl(photoURL, DataHolder.getInstance().getImageLoader());
+                    }
                     handleDistance = new Handler(new Handler.Callback() {
                         @Override
                         public boolean handleMessage(Message msg) {
@@ -73,6 +75,8 @@ public class GroceryListRecyclerAdapter extends RecyclerView.Adapter<RecyclerVie
                             ((GroceryListRecyclerViewHolder) holder).getGroceryDist().setText(params[0] +"   |   " + params[1]);
                             grocery.setDistanceFromCurrent(params[0]);
                             grocery.setTimeFromCurrent(params[1]);
+                            DataHolder.getInstance().getPlaceMap().put(grocery.getPlaceId(),
+                                    DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).mergePlace(grocery));
                             return false;
                         }
                     });

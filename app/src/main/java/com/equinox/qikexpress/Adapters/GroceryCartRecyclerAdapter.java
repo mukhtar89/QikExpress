@@ -46,7 +46,7 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
         holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryItemCart.getPlaceName()));
         holder.getGroceryItemName().setText(groceryItemCart.getItemName());
         holder.getGroceryItemPrice().setText(groceryItemCart.getItemPriceValue() != null
-                ? DataHolder.localCurrency + " " + groceryItemCart.getItemPriceValue().toString() : "N/A");
+                ? DataHolder.currentUser.getLocalCurrency() + " " + groceryItemCart.getItemPriceValue().toString() : "N/A");
         holder.getGroceryItemImage().setImageUrl(groceryItemCart.getItemImage(),
                 DataHolder.getInstance().getImageLoader());
         holder.getSaveForLaterSwitch().setChecked(groceryItemCart.getSaveForLater());

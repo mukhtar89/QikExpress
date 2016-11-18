@@ -29,11 +29,14 @@ import com.equinox.qikexpress.Adapters.MainRecyclerViewAdapter;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.FusedLocationService;
+import com.equinox.qikexpress.Utils.GetOrders;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
 import com.equinox.qikexpress.Utils.LocationPermission;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import static com.equinox.qikexpress.Models.Constants.ORDERS;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity
                             DataHolder.database.getReference(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     DataHolder.getInstance().setRole("consumer");
                     DataHolder.getInstance().generateMetadata();
+                    DataHolder.ordersReference = DataHolder.userDatabaseReference.child(ORDERS).getRef();
                     loginButton.setVisibility(View.GONE);
                     loginEmail.setVisibility(View.VISIBLE);
                     loginName.setVisibility(View.VISIBLE);

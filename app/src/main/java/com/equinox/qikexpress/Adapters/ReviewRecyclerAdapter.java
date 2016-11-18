@@ -39,7 +39,7 @@ public class ReviewRecyclerAdapter extends RecyclerView.Adapter<ReviewViewHolder
         holder.getAuthorName().setText(manager.getAuthorName());
         if (!manager.getRatingReview().isEmpty())
             holder.getReviewText().setText("\"" + manager.getRatingReview() + "\"");
-        holder.getTimeSubmitted().setText(StringManipulation.getFormattedDate(manager.getTimeSubmitted()));
+        holder.getTimeSubmitted().setText(StringManipulation.getFormattedDate((long)manager.getTimeSubmitted()*1000));
         double ratingValue = (float) manager.getRatingValue();
         holder.getRatingBar().setRating((float) ratingValue);
         if (manager.getAuthorPhotoURL() != null)

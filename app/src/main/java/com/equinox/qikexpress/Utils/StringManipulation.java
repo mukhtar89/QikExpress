@@ -22,10 +22,8 @@ public class StringManipulation {
         return builder.toString();
     }
 
-    public static String getFormattedDate(Integer seconds) {
-        Long sec = (long) seconds;
-        sec *= 1000;
-        Date date = new Date(sec);
+    public static String getFormattedDate(Long seconds) {
+        Date date = new Date(seconds);
         DateFormat simpleDateFormat = SimpleDateFormat.getDateTimeInstance();
         return simpleDateFormat.format(date);
     }

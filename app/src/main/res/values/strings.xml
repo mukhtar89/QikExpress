@@ -33,5 +33,7 @@
     <string name="title_activity_wallet">My Wallet</string>
     <string name="title_activity_grocery_shopping_cart">Grocery Cart</string>
     <string name="title_activity_checkout">Check Out</string>
+    <string name="title_activity_tracking">Track Order</string>
+    <string name="title_activity_delivery_tracking">Track Delivery</string>
 
 </resources>

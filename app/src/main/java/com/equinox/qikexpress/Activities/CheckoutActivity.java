@@ -1,5 +1,6 @@
 package com.equinox.qikexpress.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -9,17 +10,14 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.equinox.qikexpress.Adapters.CheckoutListAdapter;
-import com.equinox.qikexpress.Models.Constants;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Item;
 import com.equinox.qikexpress.R;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
-import java.security.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,7 +25,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static com.equinox.qikexpress.Enums.OrderStatus.INCOMING;
 import static com.equinox.qikexpress.Enums.QikList.GROCERY;
+import static com.equinox.qikexpress.Models.Constants.CHECKOUT;
+import static com.equinox.qikexpress.Models.Constants.DEADLINE;
+import static com.equinox.qikexpress.Models.Constants.EXCHANGE_ITEM;
+import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.Constants.IS_PARTNER;
+import static com.equinox.qikexpress.Models.Constants.ITEM_ID;
+import static com.equinox.qikexpress.Models.Constants.ITEM_IMAGE;
+import static com.equinox.qikexpress.Models.Constants.ITEM_NAME;
+import static com.equinox.qikexpress.Models.Constants.ITEM_PRICE;
+import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
+import static com.equinox.qikexpress.Models.Constants.LOCATION_LAT;
+import static com.equinox.qikexpress.Models.Constants.LOCATION_LNG;
+import static com.equinox.qikexpress.Models.Constants.ORDERS;
+import static com.equinox.qikexpress.Models.Constants.ORDER_FROM;
+import static com.equinox.qikexpress.Models.Constants.ORDER_ITEMS;
+import static com.equinox.qikexpress.Models.Constants.ORDER_PAYLOAD;
+import static com.equinox.qikexpress.Models.Constants.ORDER_STATUS;
+import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
+import static com.equinox.qikexpress.Models.Constants.PLACE_NAME;
+import static com.equinox.qikexpress.Models.Constants.PLACE_TYPE;
+import static com.equinox.qikexpress.Models.Constants.SAVE_FOR_LATER;
+import static com.equinox.qikexpress.Models.Constants.TIMESTAMP;
+import static com.equinox.qikexpress.Models.Constants.WALLET;
 
 public class CheckoutActivity extends AppCompatActivity {
 
@@ -49,34 +71,45 @@ public class CheckoutActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final Float[] walletAmount = {(float) 0.00};
-                walletReference = DataHolder.userDatabaseReference.child("wallet").getRef();
+                walletReference = DataHolder.userDatabaseReference.child(WALLET).getRef();
                 walletReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     Map<String,String> orderPlaceMap = new HashMap<>();
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.getValue() instanceof Long)
-                            walletAmount[0] = (float) (long) dataSnapshot.getValue();
+                        if (dataSnapshot.getValue() == null) walletAmount[0] = (float) 0.00;
+                        else if (dataSnapshot.getValue() instanceof Long)  walletAmount[0] = (float) (long) dataSnapshot.getValue();
                         else walletAmount[0] = (float) (double) dataSnapshot.getValue();
-                        if (walletAmount[0] == null) walletAmount[0] = (float) 0.00;
                         for (final Item item : checkoutItemsList) {
-                            DataHolder.database.getReference(item.getPlaceId()).child("isPartner")
-                                    .setValue(DataHolder.getInstance().getGroceryMap().get(item.getPlaceId()).getPartner());
-                            DataHolder.database.getReference(item.getPlaceId()).child("placeType").setValue(GROCERY.getListName());
-                            DatabaseReference orderReference = DataHolder.database.getReference(item.getPlaceId()).child("orders");
+                            DataHolder.database.getReference(item.getPlaceId()).child(IS_PARTNER)
+                                    .setValue(DataHolder.getInstance().getPlaceMap().get(item.getPlaceId()).getPartner());
+                            DataHolder.database.getReference(item.getPlaceId()).child(PLACE_TYPE).setValue(GROCERY.getListName());
+                            DatabaseReference orderBusinessReference = DataHolder.database.getReference(item.getPlaceId()).child(ORDERS);
                             if (!orderPlaceMap.containsKey(item.getPlaceId())) {
-                                orderPlaceMap.put(item.getPlaceId(), orderReference.push().getKey());
-                                orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("orderStatus").setValue(Constants.ORDER_INCOMING);
-                                orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("orderPayload").setValue(new Random().nextInt(100 - 5) + 5);
-                                orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("exchangeItem").setValue(true);
-                                orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("timestamp").setValue(System.currentTimeMillis());
-                                orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("orderFrom").setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                String idTemp = orderBusinessReference.push().getKey();
+                                orderPlaceMap.put(item.getPlaceId(), idTemp);
+                                DataHolder.ordersReference.child(idTemp).setValue(item.getPlaceId());
+                                orderBusinessReference.child(idTemp).child(ORDER_STATUS).setValue(INCOMING.getNodeName());
+                                orderBusinessReference.child(idTemp).child(PLACE_NAME).setValue(item.getPlaceName());
+                                orderBusinessReference.child(idTemp).child(ORDER_FROM).setValue(DataHolder.currentUser.toMap());
+                                orderBusinessReference.child(idTemp).child(LOCATION_LAT)
+                                        .setValue(DataHolder.getInstance().getPlaceMap().get(item.getPlaceId()).getLocation().latitude);
+                                orderBusinessReference.child(idTemp).child(LOCATION_LNG)
+                                        .setValue(DataHolder.getInstance().getPlaceMap().get(item.getPlaceId()).getLocation().longitude);
+                                Float tempWeight = (float) (new Random().nextInt(100 - 5) + 5);
+                                orderBusinessReference.child(idTemp).child(ORDER_PAYLOAD).setValue(tempWeight);
+                                orderBusinessReference.child(idTemp).child(EXCHANGE_ITEM).setValue(true);
+                                long timestampTemp = System.currentTimeMillis();
+                                orderBusinessReference.child(idTemp).child(TIMESTAMP).setValue(timestampTemp);
+                                if (!DataHolder.getInstance().getPlaceMap().get(item.getPlaceId()).getPartner())
+                                    orderBusinessReference.child(idTemp).child(DEADLINE).setValue(timestampTemp);
+                                else orderBusinessReference.child(idTemp).child(DEADLINE).setValue(timestampTemp + 1000000000);
                             }
                             String node = item.getPlaceId()+item.getItemId();
-                            orderReference.child(orderPlaceMap.get(item.getPlaceId())).child("orderItems").child(node).setValue(item.toMapCheckout());
-                            cartReference.child(node).removeValue();
+                            orderBusinessReference.child(orderPlaceMap.get(item.getPlaceId())).child(ORDER_ITEMS).child(node).setValue(item.toMap());
+                            checkoutReference.child(node).removeValue();
                             if (item.getItemPriceValue() != null) {
                                 final DatabaseReference walletOutletReference =
-                                        DataHolder.database.getReference(item.getPlaceId()).child("wallet");
+                                        DataHolder.database.getReference(item.getPlaceId()).child(WALLET);
                                 final Float[] walletBusinessAmount = {(float) 0.00};
                                 walletOutletReference.addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
@@ -97,6 +130,7 @@ public class CheckoutActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(DatabaseError databaseError) {     }
                 });
+                startActivity(new Intent(CheckoutActivity.this, TrackingActivity.class));
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -105,8 +139,8 @@ public class CheckoutActivity extends AppCompatActivity {
         checkoutListAdapter = new CheckoutListAdapter(checkoutItemsList, this);
         checkoutListView.setAdapter(checkoutListAdapter);
 
-        cartReference = DataHolder.userDatabaseReference.child("grocery_cart").getRef();
-        checkoutReference = DataHolder.userDatabaseReference.child("checkout").getRef();
+        cartReference = DataHolder.userDatabaseReference.child(GROCERY_CART).getRef();
+        checkoutReference = DataHolder.userDatabaseReference.child(CHECKOUT).getRef();
         cartReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -117,21 +151,24 @@ public class CheckoutActivity extends AppCompatActivity {
                     totalPrice = (float) 0.00;
                     while (iteratorCart.hasNext()) {
                         iteratorObject = (HashMap<String, Object>) iteratorCart.next().getValue();
-                        if (iteratorObject.containsKey("saveForLater")) {
-                            if ((Boolean) iteratorObject.get("saveForLater")) continue;
+                        if (iteratorObject.containsKey(SAVE_FOR_LATER)) {
+                            if ((Boolean) iteratorObject.get(SAVE_FOR_LATER)) continue;
                         }
                         cartItem = new Item();
-                        cartItem.setPlaceId((String) iteratorObject.get("placeId"));
-                        cartItem.setPlaceName((String) iteratorObject.get("placeName"));
-                        cartItem.setItemId((int) (long) iteratorObject.get("itemId"));
-                        cartItem.setItemName((String) iteratorObject.get("itemName"));
-                        cartItem.setItemImage((String) iteratorObject.get("itemImage"));
-                        cartItem.setItemPriceValue(iteratorObject.containsKey("itemPriceValue")
-                                ? (float) (double) iteratorObject.get("itemPriceValue") : null);
+                        cartItem.setPlaceId((String) iteratorObject.get(PLACE_ID));
+                        cartItem.setPlaceName((String) iteratorObject.get(PLACE_NAME));
+                        cartItem.setItemId((int) (long) iteratorObject.get(ITEM_ID));
+                        cartItem.setItemName((String) iteratorObject.get(ITEM_NAME));
+                        cartItem.setItemImage((String) iteratorObject.get(ITEM_IMAGE));
+                        cartItem.setItemPriceValue(iteratorObject.containsKey(ITEM_PRICE)
+                                ? (float) (double) iteratorObject.get(ITEM_PRICE) : null);
                         if (cartItem.getItemPriceValue() != null) totalPrice+=cartItem.getItemPriceValue();
-                        cartItem.setItemQuantity(iteratorObject.containsKey("itemQuantity")
-                                ? (int) (long) iteratorObject.get("itemQuantity") : 1);
-                        checkoutItemsList.add(cartItem);
+                        cartItem.setItemQuantity(iteratorObject.containsKey(ITEM_QTY)
+                                ? (int) (long) iteratorObject.get(ITEM_QTY) : 1);
+                        synchronized (DataHolder.lock) {
+                            if (!checkoutItemsList.contains(cartItem))checkoutItemsList.add(cartItem);
+                            checkoutListAdapter.notifyDataSetChanged();
+                        }
                         Map<String, Object> itemMap = cartItem.toMap();
                         Map<String, Object> checkoutItemAdd = new HashMap<>();
                         String node = cartItem.getPlaceId()+cartItem.getItemId();
@@ -139,10 +176,6 @@ public class CheckoutActivity extends AppCompatActivity {
                         checkoutItemAdd.put(node, itemMap);
                         checkoutReference.updateChildren(checkoutItemAdd);
                     }
-                    checkoutListAdapter.notifyDataSetChanged();
-                } else {
-                    Toast.makeText(CheckoutActivity.this, "No items for checkout!", Toast.LENGTH_LONG).show();
-                    finish();
                 }
             }
             @Override

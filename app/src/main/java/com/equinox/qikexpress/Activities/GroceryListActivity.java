@@ -2,6 +2,7 @@ package com.equinox.qikexpress.Activities;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
@@ -42,17 +43,20 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+
 public class GroceryListActivity extends AppCompatActivity {
 
     private HybridLayoutManager layoutManager;
     private GetGooglePlaces<Grocery> getGooglePlaces;
     private RecyclerView recyclerView;
-    private static Integer pagination = 1;
+    private Integer pagination;
     private List<Grocery> groceryList = new ArrayList<>();
     private ProgressDialog pDialog;
     private GroceryListRecyclerAdapter listRecyclerAdapter;
     private LinearLayout sortBy, filterBy;
     private TextView cartCount;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,7 @@ public class GroceryListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        context = this;
 
         if (DataHolder.location == null) {
             Toast.makeText(this, "Please turn on your Location!", Toast.LENGTH_LONG).show();
@@ -72,6 +77,7 @@ public class GroceryListActivity extends AppCompatActivity {
             pDialog.setMessage("Loading...");
             pDialog.show();
 
+            pagination = 1;
             getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, pDialog, new Handler[]{loopUntilLoad, updateDataListView});
             getGooglePlaces.parsePlaces(DataHolder.location, pagination);
 
@@ -122,7 +128,11 @@ public class GroceryListActivity extends AppCompatActivity {
             if (!pDialog.isShowing())
                 pDialog.show();
             pagination++;
-            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            if (pagination < 50) getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            else {
+                hidePDialog();
+                Toast.makeText(context, "No more Groceries can be Loaded!", Toast.LENGTH_LONG).show();
+            }
             return false;
         }
     });
@@ -164,7 +174,7 @@ public class GroceryListActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.shop_menu, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.userDatabaseReference.child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
+        DataHolder.userDatabaseReference.child(GROCERY_CART).getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
@@ -194,6 +204,9 @@ public class GroceryListActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
+        }
+        if (id == R.id.action_tracking) {
+            startActivity(new Intent(GroceryListActivity.this, TrackingActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }

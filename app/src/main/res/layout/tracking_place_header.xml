@@ -1,41 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:fitsSystemWindows="true"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="?actionBarSize"
+    app:layout_collapseMode="parallax">
 
-    <com.android.volley.toolbox.NetworkImageView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/imgPoster"
-        android:scaleType="centerCrop"
-        android:fitsSystemWindows="true"
-        app:layout_collapseMode="parallax" />
+        android:layout_height="wrap_content"
+        android:id="@+id/header_detail">
+        <com.android.volley.toolbox.NetworkImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
+            android:background="@drawable/rounded_corner"
+            android:backgroundTint="#FFFFFF"
+            android:id="@+id/profile_img"
+            android:scaleType="centerCrop" />
 
-    <ImageView
+        <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/gray_overlay"/>
-
-    <com.android.volley.toolbox.NetworkImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="top"
-        android:layout_marginTop="120dp"
-        android:layout_marginLeft="30dp"
-        android:background="@drawable/rounded_corner"
-        android:backgroundTint="#FFFFFF"
-        android:id="@+id/profile_img"
-        android:scaleType="centerCrop" />
-
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/header_detail"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="150dp">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp" >
 
         <TableRow >
             <LinearLayout
@@ -44,7 +34,6 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:layout_weight="4"
-                android:paddingTop="100dp"
                 android:paddingRight="50dp">
                 <TextView
                     android:layout_width="wrap_content"
@@ -52,24 +41,12 @@
                     android:layout_weight="3"
                     android:gravity="start"
                     android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:text="Category"
+                    android:textSize="15sp"
+                    android:text="Order ID"
                     android:layout_gravity="center_vertical|left"
                     android:padding="5dp"
                     android:textColor="#FFFFFF"
-                    android:id="@+id/category_item"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textStyle="bold"
-                    android:textSize="15sp"
-                    android:layout_gravity="center_vertical|center_horizontal|center"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:background="@drawable/rounded_corner"
-                    android:id="@+id/open_now"/>
+                    android:id="@+id/orderId"/>
             </LinearLayout>
         </TableRow>
         <TableRow >
@@ -128,26 +105,21 @@
                     android:id="@+id/time"/>
             </LinearLayout>
         </TableRow>
-        <TableRow >
-            <LinearLayout
-                app:layout_collapseMode="parallax"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="4"
-                android:paddingRight="50dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="4"
-                    android:gravity="left"
-                    android:textSize="15sp"
-                    android:layout_gravity="center_vertical|left"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/vicinity"/>
-            </LinearLayout>
-        </TableRow>
     </TableLayout>
 
-</FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <com.baoyachi.stepview.HorizontalStepView
+            android:id="@+id/step_view_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+    </LinearLayout>
+
+</LinearLayout>

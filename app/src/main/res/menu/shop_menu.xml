@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="300"
         android:title="@string/action_settings"
         app:showAsAction="never" />
 
@@ -15,5 +15,11 @@
         android:icon="@drawable/ic_shopping_basket_white_48dp"
         app:showAsAction="always"
         android:title="0" />
+    <item
+        android:id="@+id/action_tracking"
+        android:orderInCategory="200"
+        android:icon="@drawable/ic_track_changes_white_48dp"
+        app:showAsAction="always"
+        android:title="Track Orders" />
 
 </menu>

@@ -27,6 +27,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.Constants.ITEM_ID;
+import static com.equinox.qikexpress.Models.Constants.ITEM_IMAGE;
+import static com.equinox.qikexpress.Models.Constants.ITEM_NAME;
+import static com.equinox.qikexpress.Models.Constants.ITEM_PRICE;
+import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
+import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
+import static com.equinox.qikexpress.Models.Constants.PLACE_NAME;
+import static com.equinox.qikexpress.Models.Constants.SAVE_FOR_LATER;
+
 public class GroceryShoppingCartActivity extends AppCompatActivity {
 
     private List<GroceryItemCart> groceryItemCartList = new ArrayList<>();
@@ -55,7 +65,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading Cart Items...");
         progressDialog.show();
 
-        groceryCart = DataHolder.userDatabaseReference.child("grocery_cart").getRef();
+        groceryCart = DataHolder.userDatabaseReference.child(GROCERY_CART).getRef();
         oneTimeListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -67,17 +77,17 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                     while (iteratorCart.hasNext()) {
                         iteratorObject = (HashMap<String, Object>) iteratorCart.next().getValue();
                         groceryItemCart = new GroceryItemCart();
-                        groceryItemCart.setPlaceId((String) iteratorObject.get("placeId"));
-                        groceryItemCart.setPlaceName((String) iteratorObject.get("placeName"));
-                        groceryItemCart.setItemId((int) (long) iteratorObject.get("itemId"));
-                        groceryItemCart.setItemName((String) iteratorObject.get("itemName"));
-                        groceryItemCart.setItemImage((String) iteratorObject.get("itemImage"));
-                        groceryItemCart.setItemPriceValue(iteratorObject.containsKey("itemPriceValue")
-                                ? (float) (double) iteratorObject.get("itemPriceValue") : null);
-                        groceryItemCart.setSaveForLater(iteratorObject.containsKey("saveForLater")
-                                ? (Boolean) iteratorObject.get("saveForLater") : false);
-                        groceryItemCart.setItemQuantity(iteratorObject.containsKey("itemQuantity")
-                                ? (int) (long) iteratorObject.get("itemQuantity") : 1);
+                        groceryItemCart.setPlaceId((String) iteratorObject.get(PLACE_ID));
+                        groceryItemCart.setPlaceName((String) iteratorObject.get(PLACE_NAME));
+                        groceryItemCart.setItemId((int) (long) iteratorObject.get(ITEM_ID));
+                        groceryItemCart.setItemName((String) iteratorObject.get(ITEM_NAME));
+                        groceryItemCart.setItemImage((String) iteratorObject.get(ITEM_IMAGE));
+                        groceryItemCart.setItemPriceValue(iteratorObject.containsKey(ITEM_PRICE)
+                                ? (float) (double) iteratorObject.get(ITEM_PRICE) : null);
+                        groceryItemCart.setSaveForLater(iteratorObject.containsKey(SAVE_FOR_LATER)
+                                ? (Boolean) iteratorObject.get(SAVE_FOR_LATER) : false);
+                        groceryItemCart.setItemQuantity(iteratorObject.containsKey(ITEM_QTY)
+                                ? (int) (long) iteratorObject.get(ITEM_QTY) : 1);
                         groceryItemCartList.add(groceryItemCart);
                     }
                     groceryCartRecyclerAdapter.notifyDataSetChanged();

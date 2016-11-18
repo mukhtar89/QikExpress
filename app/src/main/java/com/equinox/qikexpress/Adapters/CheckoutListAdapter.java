@@ -65,7 +65,7 @@ public class CheckoutListAdapter extends BaseAdapter {
         }
         holder.itemName.setText(item.getItemName());
         holder.itemPrice.setText(item.getItemPriceValue() != null ?
-                DataHolder.localCurrency + " " + item.getItemPriceValue() : "N/A");
+                DataHolder.currentUser.getLocalCurrency() + " " + item.getItemPriceValue() : "N/A");
         holder.itemQuantity.setText(item.getItemQuantity().toString());
         holder.placeName.setText(item.getPlaceName());
         holder.itemImage.setImageUrl(item.getItemImage(), DataHolder.getInstance().getImageLoader());

@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
+
 /**
  * Created by mukht on 11/5/2016.
  */
@@ -40,7 +43,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
         this.activity = activity;
         this.groceryList = groceryList;
         this.categoryChain = categoryChain;
-        groceryItemCart = userDatabaseReference.child("grocery_cart").getRef();
+        groceryItemCart = userDatabaseReference.child(GROCERY_CART).getRef();
     }
 
     @Override
@@ -57,7 +60,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
             holder.getItemImg().setImageUrl(groceryItem.getItemImage(), DataHolder.getInstance().getImageLoader());
         holder.getGroceryItemName().setText(groceryItem.getItemName());
         holder.getGroceryItemPrice().setText(groceryItem.getItemPriceValue() == null
-                ? "N/A" : DataHolder.localCurrency + " " + groceryItem.getItemPriceValue().toString());
+                ? "N/A" : DataHolder.currentUser.getLocalCurrency() + " " + groceryItem.getItemPriceValue().toString());
         groceryItemCart.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -83,7 +86,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
                     Map<String, Object> cartItemAdd = new HashMap<>();
                     cartItemAdd.put(groceryItem.getPlaceId()+groceryItem.getItemId(), groceryItemMap);
                     groceryItemCart.updateChildren(cartItemAdd);
-                    groceryItemCart.child(groceryItem.getPlaceId()+groceryItem.getItemId()).child("itemQuantity").setValue(msg.arg1);
+                    groceryItemCart.child(groceryItem.getPlaceId()+groceryItem.getItemId()).child(ITEM_QTY).setValue(msg.arg1);
                     holder.getFabAddCart().setImageResource(R.drawable.ic_remove_shopping_cart_white_48dp);
                 }
                 else {

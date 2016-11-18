@@ -62,8 +62,8 @@ public class WalletActivity extends AppCompatActivity {
                     else if (dataSnapshot.getValue() instanceof Double)
                         walletAmountValue = (float) (double) dataSnapshot.getValue();
                     else walletAmountValue = (float) (long) dataSnapshot.getValue();
-                    if (DataHolder.localCurrency != null)
-                        walletAmount.setText(DataHolder.localCurrency + " " + dc2.format(walletAmountValue));
+                    if (DataHolder.currentUser.getLocalCurrency() != null)
+                        walletAmount.setText(DataHolder.currentUser.getLocalCurrency() + " " + dc2.format(walletAmountValue));
                     else locationMetaDataFetchSignal.sendMessage(new Message());
                 }
                 @Override
@@ -79,8 +79,8 @@ public class WalletActivity extends AppCompatActivity {
     private Handler locationMetaDataFetchSignal = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            if (msg.arg1 == 1) walletAmount.setText(DataHolder.localCurrency + " " + walletAmountValue);
-            else DataHolder.getInstance().fetchLocationMetadata(locationMetaDataFetchSignal, DataHolder.location, WalletActivity.this);
+            if (msg.arg1 == 1) walletAmount.setText(DataHolder.currentUser.getLocalCurrency() + " " + walletAmountValue);
+            else DataHolder.getInstance().fetchLocationMetadata(DataHolder.location, WalletActivity.this);
             return false;
         }
     });

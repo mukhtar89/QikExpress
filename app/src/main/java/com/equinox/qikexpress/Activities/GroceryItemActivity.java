@@ -24,6 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+
 public class GroceryItemActivity extends AppCompatActivity {
 
     private List<GroceryItem> groceryItemList1, groceryItemList2;
@@ -43,7 +45,7 @@ public class GroceryItemActivity extends AppCompatActivity {
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
         String placeId = getIntent().getStringExtra("PLACE_ID");
-        if (!DataHolder.getInstance().getGroceryMap().get(placeId).getPartner()) {
+        if (!DataHolder.getInstance().getPlaceMap().get(placeId).getPartner()) {
             Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout),
                     "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
@@ -73,7 +75,7 @@ public class GroceryItemActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_grocery_item, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.userDatabaseReference.child("grocery_cart").getRef().addValueEventListener(new ValueEventListener() {
+        DataHolder.userDatabaseReference.child(GROCERY_CART).getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
