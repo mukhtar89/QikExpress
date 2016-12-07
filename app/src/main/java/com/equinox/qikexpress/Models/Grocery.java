@@ -16,23 +16,22 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class Grocery extends Place {
 
-    private Integer brandId;
-    private String photoReference;
+    private String photoReference, countryCode;
 
     public Grocery mergeGrocery(Grocery addGrocery){
-        if (brandId == null)
-            brandId = addGrocery.getBrandId();
+        if (countryCode == null)
+            countryCode = addGrocery.getCountryCode();
         if (photoReference == null)
             photoReference = addGrocery.getPhotoReference();
 
         return this;
     }
 
-    public Integer getBrandId() {
-        return brandId;
+    public String getCountryCode() {
+        return countryCode;
     }
-    public void setBrandId(Integer brandId) {
-        this.brandId = brandId;
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
     }
     public String getPhotoReference() {
         return photoReference;

@@ -65,7 +65,8 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading Cart Items...");
         progressDialog.show();
 
-        groceryCart = DataHolder.userDatabaseReference.child(GROCERY_CART).getRef();
+        if (DataHolder.userDatabaseReference != null)
+            groceryCart = DataHolder.userDatabaseReference.child(GROCERY_CART).getRef();
         oneTimeListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -77,17 +78,9 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                     while (iteratorCart.hasNext()) {
                         iteratorObject = (HashMap<String, Object>) iteratorCart.next().getValue();
                         groceryItemCart = new GroceryItemCart();
-                        groceryItemCart.setPlaceId((String) iteratorObject.get(PLACE_ID));
-                        groceryItemCart.setPlaceName((String) iteratorObject.get(PLACE_NAME));
-                        groceryItemCart.setItemId((int) (long) iteratorObject.get(ITEM_ID));
-                        groceryItemCart.setItemName((String) iteratorObject.get(ITEM_NAME));
-                        groceryItemCart.setItemImage((String) iteratorObject.get(ITEM_IMAGE));
-                        groceryItemCart.setItemPriceValue(iteratorObject.containsKey(ITEM_PRICE)
-                                ? (float) (double) iteratorObject.get(ITEM_PRICE) : null);
+                        groceryItemCart.fromMap(iteratorObject);
                         groceryItemCart.setSaveForLater(iteratorObject.containsKey(SAVE_FOR_LATER)
                                 ? (Boolean) iteratorObject.get(SAVE_FOR_LATER) : false);
-                        groceryItemCart.setItemQuantity(iteratorObject.containsKey(ITEM_QTY)
-                                ? (int) (long) iteratorObject.get(ITEM_QTY) : 1);
                         groceryItemCartList.add(groceryItemCart);
                     }
                     groceryCartRecyclerAdapter.notifyDataSetChanged();
@@ -105,7 +98,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                 Toast.makeText(GroceryShoppingCartActivity.this, "Cannot fetch Grocery Cart Items now!", Toast.LENGTH_LONG).show();
                 progressDialog.dismiss();  }
         };
-        groceryCart.addListenerForSingleValueEvent(oneTimeListener);
+        if (groceryCart != null) groceryCart.addListenerForSingleValueEvent(oneTimeListener);
 
 
         groceryShoppingList = (RecyclerView) findViewById(R.id.grocery_shopping_cart_list);

@@ -13,16 +13,20 @@ import com.equinox.qikexpress.Models.Order;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.FusedLocationService;
 import com.equinox.qikexpress.Utils.LocationPermission;
-import com.equinox.qikexpress.Utils.MapUtils.SphericalUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.ORDER_ID;
 
@@ -57,27 +61,39 @@ public class DeliveryTrackingActivity extends AppCompatActivity implements OnMap
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         setUpMap();
+        List<Marker> markers = new ArrayList<>();
         MarkerOptions markerUserOptions = new MarkerOptions();
-        markerUserOptions.position(DataHolder.currentUser.getUserLocation())
+        markerUserOptions.position(DataHolder.currentUser.getPermLocation())
                 .title(DataHolder.currentUser.getName())
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person_black_24dp));
         Marker markerUser = mMap.addMarker(markerUserOptions);
         markerUser.showInfoWindow();
+        markers.add(markerUser);
         MarkerOptions markerBusinessOptions = new MarkerOptions();
         markerBusinessOptions.position(currentOrder.getShop().getLocation())
                 .title(currentOrder.getShop().getName())
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_store_black_24dp));
         Marker markerBusiness = mMap.addMarker(markerBusinessOptions);
         markerBusiness.showInfoWindow();
+        markers.add(markerBusiness);
         if (currentOrder.getDriver() != null) {
             MarkerOptions markerDriverOptions = new MarkerOptions();
-            markerDriverOptions.position(currentOrder.getDriver().getUserLocation())
+            markerDriverOptions.position(currentOrder.getDriver().getPermLocation())
                     .title(currentOrder.getDriver().getName())
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bike_black_24dp));
             Marker markerDriver = mMap.addMarker(markerDriverOptions);
             markerDriver.showInfoWindow();
+            markers.add(markerDriver);
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentOrder.getFrom().getUserLocation(), 14));
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : markers) {
+            builder.include(marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        int padding = 200; // offset from edges of the map in pixels
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.animateCamera(cameraUpdate);
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentOrder.getFrom().getPermLocation(), 14));
     }
 
     private Handler locationChangedListener = new Handler(new Handler.Callback() {

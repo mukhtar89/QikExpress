@@ -1,8 +1,22 @@
 package com.equinox.qikexpress.Models;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.Exclude;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.equinox.qikexpress.Models.Constants.ADDRESS;
+import static com.equinox.qikexpress.Models.Constants.BUSINESS;
+import static com.equinox.qikexpress.Models.Constants.BUSINESS_OUTLET;
+import static com.equinox.qikexpress.Models.Constants.GMAP_URL;
+import static com.equinox.qikexpress.Models.Constants.IS_PARTNER;
+import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LAT;
+import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LNG;
+import static com.equinox.qikexpress.Models.Constants.NAME;
+import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
+import static com.equinox.qikexpress.Models.Constants.PROFILE_IMAGE;
 
 /**
  * Created by mukht on 10/30/2016.
@@ -14,13 +28,15 @@ public class Place {
     private LatLng location;
     private Boolean openNow, isPartner;
     private Photo photos;
-    private String iconURL, gMapURL, webURL, profileImageURL;
+    private String iconURL, gMapURL, webURL;
     private Double totalRating;
     private List<RatingsManager> individualRatings;
-    private String address, phoneNumber;
+    private String phoneNumber;
     private Periods periods;
     private Float distanceFromCurrent;
     private Integer timeFromCurrent;
+    private GeoAddress address;
+    private String brandName, brandImage;
 
     public Place mergePlace(Place addPlace) {
         if (vicinity == null)
@@ -45,14 +61,44 @@ public class Place {
             address = addPlace.getAddress();
         if (phoneNumber == null)
             phoneNumber = addPlace.getPhoneNumber();
+        if (brandName == null)
+            brandName = addPlace.getBrandName();
+        if (brandImage == null)
+            brandImage = addPlace.getBrandImage();
         if (periods == null)
             periods = addPlace.getPeriods();
         if (distanceFromCurrent == null)
             distanceFromCurrent = addPlace.getDistanceFromCurrent();
         if (timeFromCurrent == null)
             timeFromCurrent = addPlace.getTimeFromCurrent();
-        if (profileImageURL == null)
-            profileImageURL = addPlace.getProfileImageURL();
+        return this;
+    }
+
+    public String getBasePath() {
+        return address.getBasePath();
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put(PLACE_ID, placeId);
+        result.put(NAME, name);
+        result.put(PERM_LOCATION_LAT, location.latitude);
+        result.put(PERM_LOCATION_LNG, location.longitude);
+        result.put(IS_PARTNER, isPartner);
+        result.put(GMAP_URL, gMapURL);
+        result.put(ADDRESS, address.toMap());
+        return result;
+    }
+
+    @Exclude
+    public Place fromMap(Map<String,Object> entry) {
+        placeId = (String) entry.get(PLACE_ID);
+        name = (String) entry.get(NAME);
+        location = new LatLng((Double) entry.get(PERM_LOCATION_LAT),(Double) entry.get(PERM_LOCATION_LNG));
+        isPartner = (Boolean) entry.get(IS_PARTNER);
+        gMapURL = (String) entry.get(GMAP_URL);
+        address = new GeoAddress().fromMap((Map<String,Object>) entry.get(ADDRESS));
         return this;
     }
 
@@ -136,10 +182,10 @@ public class Place {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    public String getAddress() {
+    public GeoAddress getAddress() {
         return address;
     }
-    public void setAddress(String address) {
+    public void setAddress(GeoAddress address) {
         this.address = address;
     }
     public Periods getPeriods() {
@@ -154,10 +200,16 @@ public class Place {
     public void setPartner(Boolean partner) {
         isPartner = partner;
     }
-    public String getProfileImageURL() {
-        return profileImageURL;
+    public String getBrandImage() {
+        return brandImage;
     }
-    public void setProfileImageURL(String profileImageURL) {
-        this.profileImageURL = profileImageURL;
+    public void setBrandImage(String brandImage) {
+        this.brandImage = brandImage;
+    }
+    public String getBrandName() {
+        return brandName;
+    }
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 }

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.equinox.qikexpress.Adapters.GroceryItemRecyclerAdapter;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GroceryItem;
+import com.equinox.qikexpress.Models.GroceryItemCollection;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
 import com.google.firebase.database.DataSnapshot;
@@ -22,13 +23,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.DataHolder.groceryItemCollectionCat2Mapping;
 
 public class GroceryItemActivity extends AppCompatActivity {
 
-    private List<GroceryItem> groceryItemList1, groceryItemList2;
+    private List<GroceryItemCollection> groceryItemCollectionList;
     private RecyclerView groceryItemRecycler;
     private GroceryItemRecyclerAdapter groceryItemRecyclerAdapter;
     private HybridLayoutManager layoutManager;
@@ -49,25 +52,19 @@ public class GroceryItemActivity extends AppCompatActivity {
             Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout),
                     "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
-        groceryItemList1 = DataHolder.groceryItemMapping.get(category1);
-        groceryItemList2 = new ArrayList<>();
-        for (GroceryItem item : groceryItemList1) {
-            if (item.getCatLevel().size() > 1){
-                if (item.getCatLevel().get(1).equals(category2)) {
-                    item.setPlaceName(DataHolder.getInstance().getGroceryName(item.getPlaceId()));
-                    groceryItemList2.add(item);
-                }
-            }
-        }
+
+        groceryItemCollectionList = DataHolder.groceryItemCollectionCat2Mapping.get(category1).get(category2);
 
         layoutManager = new HybridLayoutManager(this);
         groceryItemRecycler = (RecyclerView) findViewById(R.id.grocery_item_recycler);
         groceryItemRecycler.setLayoutManager(layoutManager.getLayoutManager(150));
         groceryItemRecycler.setHasFixedSize(true);
-        groceryItemRecyclerAdapter = new GroceryItemRecyclerAdapter(this, groceryItemList2, category1 + " -> " + category2);
+        groceryItemRecyclerAdapter = new GroceryItemRecyclerAdapter(this, groceryItemCollectionList);
         groceryItemRecycler.setAdapter(groceryItemRecyclerAdapter);
 
         getSupportActionBar().setTitle(category1 + " -> " + category2);
+        DataHolder.category1 = category1;
+        DataHolder.category2 = category2;
     }
 
     @Override

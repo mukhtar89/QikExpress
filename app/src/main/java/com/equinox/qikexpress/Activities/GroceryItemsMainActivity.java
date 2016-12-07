@@ -59,7 +59,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     private ProgressDialog pDialog;
     private Map<String,String> groceryCategoriesMapping = new HashMap<>();
     private List<String> listDataHeader = new ArrayList<>();
-    private HashMap<String, List<GroceryItem>> listDataChild = new HashMap<>();
+    private HashMap<String,List<String>> listDataChild = new HashMap<>();
     private GroceryItemDBHandler groceryItemDBHandler;
 
     @Override
@@ -89,7 +89,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         distance.setText(grocery.getDistanceFromCurrent().toString()+" km");
         time.setText(grocery.getTimeFromCurrent().toString()+" min");
         vicinity.setText(grocery.getVicinity());
-        if (grocery.getProfileImageURL() == null) getGroceryData();
+        if (grocery.getBrandImage() == null) getGroceryData();
         else groceryDBHeaderHanlder.sendMessage(new Message());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -130,14 +130,14 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                     if (response.has("items")) {
                         JSONArray listObjects = response.getJSONArray("items");
                         JSONObject groceryObject = listObjects.getJSONObject(0);
-                        if (groceryObject.has("brandId"))
-                            grocery.setBrandId(groceryObject.getInt("brandId"));
-                        if (groceryObject.has("profileImage"))
-                            grocery.setProfileImageURL(groceryObject.getString("profileImage"));
+                        if (groceryObject.has("brandName"))
+                            grocery.setBrandName(groceryObject.getString("brandName"));
+                        if (groceryObject.has("brandImage"))
+                            grocery.setBrandImage(groceryObject.getString("brandImage"));
                         if (groceryObject.has("photoReference")) {
                             grocery.getPhoto().setPhotoReference(groceryObject.getString("photoReference"));
-                            grocery.getPhoto().setWidth(groceryObject.getInt("photoWidth"));
                         }
+                        grocery.setCountryCode(groceryObject.getString("countryCode"));
                         DataHolder.getInstance().getGroceryMap().put(grocery.getPlaceId(),
                                 DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).mergeGrocery(grocery));
                         DataHolder.getInstance().getPlaceMap().put(grocery.getPlaceId(),
@@ -166,8 +166,8 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 if (!photoURL.isEmpty())
                     groceryImage.setImageUrl(photoURL, DataHolder.getInstance().getImageLoader());
             }
-            if (grocery.getProfileImageURL() != null)
-                profileImage.setImageUrl(grocery.getProfileImageURL(), DataHolder.getInstance().getImageLoader());
+            if (grocery.getBrandImage() != null)
+                profileImage.setImageUrl(grocery.getBrandImage(), DataHolder.getInstance().getImageLoader());
             else {
                 profileImage.setVisibility(View.GONE);
                 FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,TableLayout.LayoutParams.MATCH_PARENT);
@@ -196,12 +196,17 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 if (listDataChild.isEmpty()) {
                     groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
                     grocery.setPartner(false);
-                    DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).setPartner(true);
-                    DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).setPartner(true);
+                    DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).setPartner(false);
+                    DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).setPartner(false);
                     pDialog.show();
                     return false;
                 }
-                DataHolder.groceryItemMapping = listDataChild;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        DataHolder.runGroceryItemCatMapping();
+                    }
+                }).start();
                 listDataHeader.clear();
                 listDataHeader.addAll(listDataChild.keySet());
                 if (!groceryCategoriesMapping.isEmpty())

@@ -73,7 +73,7 @@ public class ReviewFragment extends Fragment {
             }
         });
         getPlaceDetails = new GetPlaceDetails(pDialog, updateDataListView);
-        getPlaceDetails.parseDetail(getArguments().getString(PLACE_ID));
+        getPlaceDetails.parseDetail(null, getArguments().getString(PLACE_ID));
         return rootView;
     }
 

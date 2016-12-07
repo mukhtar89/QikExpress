@@ -85,7 +85,7 @@ public class GetGooglePlaces<T extends Place> {
                         hidePDialog();
                         placeHandlers[1].sendMessage(new Message());
                     }
-                },3000);
+                },1000);
                 AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(this);
             }
         });

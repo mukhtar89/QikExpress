@@ -13,6 +13,7 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.equinox.qikexpress.Models.Constants;
 import com.equinox.qikexpress.Models.DataHolder;
+import com.equinox.qikexpress.Models.GeoAddress;
 import com.equinox.qikexpress.Models.Periods;
 import com.equinox.qikexpress.Models.Photo;
 import com.equinox.qikexpress.Models.Place;
@@ -25,6 +26,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by mukht on 11/2/2016.
@@ -41,7 +44,7 @@ public class GetPlaceDetails {
         this.placeHandler = placeHandler;
     }
 
-    public void parseDetail(final String... placeIds) {
+    public void parseDetail(final Object arguments, final String... placeIds) {
         String baseURL = "https://maps.googleapis.com/maps/api/place/details/json?";
         for (String placeId :  placeIds) {
             String urlArguments = "placeid=" + placeId + "&key=" + Constants.PLACES_API_KEY;
@@ -51,8 +54,15 @@ public class GetPlaceDetails {
         AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
             @Override
             public void onRequestFinished(Request<Object> request) {
-                hidePDialog();
-                if (placeHandler != null) placeHandler.sendMessage(new Message());
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        hidePDialog();
+                        Message message = new Message();
+                        if (arguments != null) message.obj = arguments;
+                        if (placeHandler != null) placeHandler.sendMessage(message);
+                    }
+                },1000);
                 AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(this);
             }
         });
@@ -113,7 +123,21 @@ public class GetPlaceDetails {
                     place.setgMapURL(resultObj.getString("url"));
                     place.setVicinity(resultObj.getString("vicinity"));
                     if (resultObj.has("website")) place.setWebURL(resultObj.getString("website"));
-                    place.setAddress(resultObj.getString("formatted_address"));
+
+                    JSONArray addressObj = resultObj.getJSONArray("address_components");
+                    GeoAddress address = new GeoAddress();
+                    for (int i=addressObj.length()-1; i>=0; i--) {
+                        JSONObject addressElement = addressObj.getJSONObject(i);
+                        GeoAddress.GeoElement tempAddressElement = address.new GeoElement();
+                        tempAddressElement.setName(addressElement.getString("short_name"));
+                        JSONArray addressElementTypes = addressElement.getJSONArray("types");
+                        for (int j=0; j<addressElementTypes.length(); j++)
+                            if (!addressElementTypes.getString(j).equals("political"))
+                                tempAddressElement.getTypes().add(addressElementTypes.getString(j));
+                        address.getAddressElements().add(tempAddressElement);
+                    }
+                    place.setAddress(address);
+
                     place.setPhoneNumber(resultObj.getString("international_phone_number"));
                     if (DataHolder.getInstance().getPlaceMap().containsKey(place.getPlaceId()))
                         DataHolder.getInstance().getPlaceMap().put(place.getPlaceId(),

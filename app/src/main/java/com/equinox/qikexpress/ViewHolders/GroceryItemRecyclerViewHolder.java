@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
+import com.equinox.qikexpress.Activities.GroceryItemDetailActivity;
 import com.equinox.qikexpress.Activities.GroceryItemsMainActivity;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.R;
@@ -53,8 +54,8 @@ public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder imple
     @Override
     public void onClick(View v) {
         int itemPosition = getLayoutPosition();
-        Intent itemIntent = new Intent(activity, GroceryItemsMainActivity.class);
-        itemIntent.putExtra("PLACE_ID", DataHolder.groceryList.get(itemPosition).getPlaceId());
+        Intent itemIntent = new Intent(activity, GroceryItemDetailActivity.class);
+        itemIntent.putExtra("ITEM_POS", itemPosition);
         activity.startActivity(itemIntent);
     }
 }

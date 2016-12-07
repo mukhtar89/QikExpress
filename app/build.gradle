@@ -7,8 +7,8 @@ android {
         applicationId "com.equinox.qikexpress"
         minSdkVersion 17
         targetSdkVersion 24
-        versionCode 5
-        versionName "0.0.5"
+        versionCode 6
+        versionName "0.0.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -32,6 +32,7 @@ dependencies {
     compile 'eu.the4thfloor.volley:com.android.volley:2015.05.28'
     compile 'com.facebook.android:facebook-android-sdk:4.17.0'
     compile 'com.github.baoyachi:StepView:1.9'
+    compile 'com.google.code.gson:gson:2.8.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

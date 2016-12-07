@@ -27,4 +27,10 @@ public class StringManipulation {
         DateFormat simpleDateFormat = SimpleDateFormat.getDateTimeInstance();
         return simpleDateFormat.format(date);
     }
+
+    public static String getFormattedTime(Long seconds) {
+        Date date = new Date(seconds);
+        DateFormat simpleDateFormat = SimpleDateFormat.getTimeInstance();
+        return simpleDateFormat.format(date);
+    }
 }

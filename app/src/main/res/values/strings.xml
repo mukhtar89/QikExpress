@@ -13,7 +13,7 @@
     <string name="action_sign_in">Login</string>
     <string name="action_sign_up">Register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_email">This email permAddress is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
@@ -35,5 +35,6 @@
     <string name="title_activity_checkout">Check Out</string>
     <string name="title_activity_tracking">Track Order</string>
     <string name="title_activity_delivery_tracking">Track Delivery</string>
+    <string name="title_activity_grocery_item_detail">GroceryItemDetailActivity</string>
 
 </resources>

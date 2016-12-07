@@ -1,12 +1,14 @@
 package com.equinox.qikexpress.Models;
 
-import android.location.Address;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.Exclude;
 
 import java.util.HashMap;
-import java.util.Map;
+
+import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LAT;
+import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LNG;
+import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LAT;
+import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LNG;
 
 /**
  * Created by mukht on 11/16/2016.
@@ -14,9 +16,9 @@ import java.util.Map;
 
 public class User {
 
-    private String id, name, email, photoURL, phone, localCurrency, localCurrencySymbol, featuredAddress;
-    private LatLng userLocation;
-    private Address address;
+    private String id, name, email, photoURL, phone, localCurrency, localCurrencySymbol;
+    private LatLng permLocation, currentLocation;
+    private GeoAddress permAddress, currentAddress;
 
     public String getId() {
         return id;
@@ -48,17 +50,17 @@ public class User {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    public LatLng getUserLocation() {
-        return userLocation;
+    public LatLng getPermLocation() {
+        return permLocation;
     }
-    public void setUserLocation(LatLng userLocation) {
-        this.userLocation = userLocation;
+    public void setPermLocation(LatLng permLocation) {
+        this.permLocation = permLocation;
     }
-    public Address getAddress() {
-        return address;
+    public GeoAddress getPermAddress() {
+        return permAddress;
     }
-    public void setAddress(Address address) {
-        this.address = address;
+    public void setPermAddress(GeoAddress permAddress) {
+        this.permAddress = permAddress;
     }
     public String getLocalCurrency() {
         return localCurrency;
@@ -72,11 +74,17 @@ public class User {
     public void setLocalCurrencySymbol(String localCurrencySymbol) {
         this.localCurrencySymbol = localCurrencySymbol;
     }
-    public String getFeaturedAddress() {
-        return featuredAddress;
+    public GeoAddress getCurrentAddress() {
+        return currentAddress;
     }
-    public void setFeaturedAddress(String featuredAddress) {
-        this.featuredAddress = featuredAddress;
+    public void setCurrentAddress(GeoAddress currentAddress) {
+        this.currentAddress = currentAddress;
+    }
+    public LatLng getCurrentLocation() {
+        return currentLocation;
+    }
+    public void setCurrentLocation(LatLng currentLocation) {
+        this.currentLocation = currentLocation;
     }
 
     @Exclude
@@ -86,9 +94,14 @@ public class User {
         userMap.put("name",name);
         userMap.put("email",email);
         userMap.put("photoURL",photoURL);
-        userMap.put("userLocationLat",userLocation.latitude);
-        userMap.put("userLocationLng",userLocation.longitude);
-        userMap.put("featuredAddress",featuredAddress);
+        if (permLocation != null) {
+            userMap.put(PERM_LOCATION_LAT, permLocation.latitude);
+            userMap.put(PERM_LOCATION_LNG, permLocation.longitude);
+        }
+        userMap.put(CURRENT_LOCATION_LAT, currentLocation.latitude);
+        userMap.put(CURRENT_LOCATION_LNG, currentLocation.longitude);
+        if (permAddress != null) userMap.put("permAddress", permAddress.toMap());
+        userMap.put("currentAddress", currentAddress.toMap());
         return userMap;
     }
 
@@ -98,8 +111,12 @@ public class User {
         name = (String) userMap.get("name");
         email = (String) userMap.get("email");
         photoURL = (String) userMap.get("photoURL");
-        userLocation = new LatLng((Double) userMap.get("userLocationLat"), (Double) userMap.get("userLocationLng"));
-        featuredAddress = (String) userMap.get("featuredAddress");
+        if (userMap.containsKey("permLocation"))
+            permLocation = new LatLng((Double) userMap.get(PERM_LOCATION_LAT), (Double) userMap.get(PERM_LOCATION_LNG));
+        currentLocation = new LatLng((Double) userMap.get(CURRENT_LOCATION_LAT), (Double) userMap.get(CURRENT_LOCATION_LNG));
+        if (userMap.containsKey("permAddress"))
+            permAddress = new GeoAddress().fromMap((HashMap<String,Object>)userMap.get("permAddress"));
+        currentAddress = new GeoAddress().fromMap((HashMap<String,Object>)userMap.get("currentAddress"));
         return this;
     }
 }

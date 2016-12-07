@@ -29,4 +29,4 @@
         map:cameraBearing="112.5"
         tools:context="com.equinox.qikexpress.Activities.DeliveryTrackingActivity" />
 
-    </android.support.design.widget.CoordinatorLayout>
+</android.support.design.widget.CoordinatorLayout>

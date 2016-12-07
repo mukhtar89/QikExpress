@@ -57,6 +57,7 @@ public class GroceryListActivity extends AppCompatActivity {
     private LinearLayout sortBy, filterBy;
     private TextView cartCount;
     private Context context;
+    private ListSortFunc<Grocery> sortFunc = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +98,8 @@ public class GroceryListActivity extends AppCompatActivity {
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         public boolean onMenuItemClick(MenuItem item) {
                             Message message = new Message();
-                            message.arg1 = item.getTitle().equals("By Distance") ? 0 : 1;
-                            sortHandler.sendMessage(new Message());
+                            message.arg1 = item.getTitle().equals("By Distance") ? 1 : 2;
+                            sortHandler.sendMessage(message);
                             return true;
                         }
                     });
@@ -111,13 +112,16 @@ public class GroceryListActivity extends AppCompatActivity {
     private Handler sortHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            ListSortFunc<Grocery> sortFunc = new ListSortFunc<>(Grocery.class, groceryList.size(), sortHandler);
-            List<Grocery> tempList;
-            if (msg.arg1 == 0)  tempList = sortFunc.sortByDistance(groceryList.toArray());
-            else   tempList = sortFunc.sortByTime(groceryList.toArray());
-            groceryList.clear();
-            groceryList.addAll(tempList);
-            listRecyclerAdapter.notifyDataSetChanged();
+            if (sortFunc == null)
+                sortFunc = new ListSortFunc<>(Grocery.class, groceryList.size(), sortHandler, context);
+            List<Grocery> tempList = new ArrayList<>();
+            if (msg.arg1 == 1)  tempList = sortFunc.sortByDistance(groceryList.toArray());
+            else if (msg.arg1 == 2)  tempList = sortFunc.sortByTime(groceryList.toArray());
+            if (tempList != null) {
+                groceryList.clear();
+                groceryList.addAll(tempList);
+                listRecyclerAdapter.notifyDataSetChanged();
+            }
             return false;
         }
     });

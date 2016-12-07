@@ -1,6 +1,5 @@
 package com.equinox.qikexpress.Activities;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,6 +14,7 @@ import android.widget.Toast;
 
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.R;
+import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -80,7 +80,7 @@ public class WalletActivity extends AppCompatActivity {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.arg1 == 1) walletAmount.setText(DataHolder.currentUser.getLocalCurrency() + " " + walletAmountValue);
-            else DataHolder.getInstance().fetchLocationMetadata(DataHolder.location, WalletActivity.this);
+            else new FetchGeoAddress().fetchCurrencyMetadata();
             return false;
         }
     });

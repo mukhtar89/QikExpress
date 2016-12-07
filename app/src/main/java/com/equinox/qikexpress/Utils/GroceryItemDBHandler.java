@@ -9,7 +9,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GroceryItem;
+import com.equinox.qikexpress.Models.GroceryItemCollection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.equinox.qikexpress.Models.DataHolder.currentGroceryItemCollections;
+
 /**
  * Created by mukht on 11/4/2016.
  */
@@ -28,7 +32,7 @@ public class GroceryItemDBHandler {
 
     private String TAG = GroceryItemDBHandler.class.getSimpleName();
     private Map<String,String> groceryCategoriesMapping;
-    private HashMap<String, List<GroceryItem>> listDataChild;
+    private HashMap<String,List<String>> listDataChild;
     private Handler groceryItemHandler;
     private Dialog pDialog;
 
@@ -87,24 +91,55 @@ public class GroceryItemDBHandler {
                         JSONArray categoryArray = response.getJSONArray("items");
                         hidePDialog();
                         // Parsing json
+                        currentGroceryItemCollections.clear();
                         for (int i = 0; i < categoryArray.length(); i++) {
                             JSONObject groceryItemObject = categoryArray.getJSONObject(i);
                             GroceryItem groceryItem = new GroceryItem();
                             groceryItem.setPlaceId(placeId);
-                            if (isPartner) groceryItem.setItemPriceValue((float) groceryItemObject.getDouble("groceryItemPriceValue"));
-                            groceryItem.setItemId(groceryItemObject.getInt("groceryItemId"));
-                            groceryItem.setItemName(groceryItemObject.getString("groceryItemName"));
-                            if (groceryItemObject.has("groceryItemImage"))
-                                groceryItem.setItemImage(groceryItemObject.getString("groceryItemImage"));
+                            if (isPartner) {
+                                groceryItem.setItemPriceValue((float) groceryItemObject.getDouble("priceValue"));
+                                groceryItem.setItemPricePerWeight((float) groceryItemObject.getDouble("pricePerWeight"));
+                                groceryItem.setItemPricePerVol((float) groceryItemObject.getDouble("pricePerVol"));
+                                groceryItem.setCurrencySymbol(groceryItemObject.getString("currencySymbol"));
+                                groceryItem.setCountryCode(groceryItemObject.getString("countryCode"));
+                                groceryItem.setCurrencyCode(groceryItemObject.getString("currencyCode"));
+                            }
+                            groceryItem.setItemId(groceryItemObject.getInt("itemId"));
+                            groceryItem.setItemName(groceryItemObject.getString("name"));
+                            if (groceryItemObject.has("image"))
+                                groceryItem.setItemImage(groceryItemObject.getString("image"));
+                            if (groceryItemObject.has("brandName"))
+                                groceryItem.setItemBrandName(groceryItemObject.getString("brandName"));
+                            if (groceryItemObject.has("brandImage"))
+                                groceryItem.setItemBrandImage(groceryItemObject.getString("brandImage"));
                             List<String> categories = new ArrayList<>();
                             for (int j=1; j<=4; j++) {
                                 if (groceryItemObject.has("catLev" + j))
                                     categories.add(groceryItemObject.getString("catLev" + j));
                             }
                             groceryItem.setCatLevel(categories);
+                            if (groceryItemObject.has("customSize"))
+                                groceryItem.setItemCustomSize(groceryItemObject.getString("customSize"));
+                            groceryItem.setItemWeight((float) groceryItemObject.getDouble("weight"));
+                            groceryItem.setItemVol((float) groceryItemObject.getDouble("volume"));
+                            if (groceryItemObject.has("weightUnit"))
+                                groceryItem.setItemWeightUnit(groceryItemObject.getString("weightUnit"));
+                            if (groceryItemObject.has("volumeUnit"))
+                                groceryItem.setItemVolumeUnit(groceryItemObject.getString("volumeUnit"));
+                            groceryItem.setItemVolLoose(groceryItemObject.getBoolean("volLoose"));
+                            groceryItem.setItemWeightLoose(groceryItemObject.getBoolean("weightLoose"));
+                            groceryItem.setItemWeightScaleMultiplicand((float) groceryItemObject.getDouble("weightScaleMultiplicand"));
+                            groceryItem.setItemVolumeScaleMultiplicand((float) groceryItemObject.getDouble("volumeScaleMultiplicand"));
+                            groceryItem.setPlaceName(DataHolder.getInstance().getGroceryMap().get(placeId).getName());
+
+                            if (!currentGroceryItemCollections.containsKey(groceryItem.getItemName()))
+                                currentGroceryItemCollections.put(groceryItem.getItemName(), new GroceryItemCollection().insert(groceryItem));
+                            else currentGroceryItemCollections.get(groceryItem.getItemName()).insert(groceryItem);
+
                             if (!listDataChild.containsKey(categories.get(0)))
-                                listDataChild.put(categories.get(0), new ArrayList<GroceryItem>());
-                            listDataChild.get(categories.get(0)).add(groceryItem);
+                                listDataChild.put(categories.get(0), new ArrayList<String>());
+                            if (!listDataChild.get(categories.get(0)).contains(categories.get(1)))
+                                listDataChild.get(categories.get(0)).add(categories.get(1));
                         }
                     }
                 } catch (JSONException e) {
@@ -133,7 +168,7 @@ public class GroceryItemDBHandler {
         return groceryCategoriesMapping;
     }
 
-    public Map<String, List<GroceryItem>> returnDataChildren() {
+    public Map<String, List<String>> returnDataChildren() {
         return listDataChild;
     }
 }
