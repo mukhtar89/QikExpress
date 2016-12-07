@@ -235,14 +235,6 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
-        MenuItem cartItem = menu.findItem(R.id.action_cart);
-        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent groceryShoppingCartIntent = new Intent(GroceryItemsMainActivity.this, GroceryShoppingCartActivity.class);
-                startActivity(groceryShoppingCartIntent);
-            }
-        });
         return true;
     }
 
@@ -253,6 +245,13 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_cart) {
+            Intent groceryShoppingCartIntent = new Intent(GroceryItemsMainActivity.this, GroceryShoppingCartActivity.class);
+            startActivity(groceryShoppingCartIntent);
+            return true;
+        }
+        if (id == R.id.action_search) {
+            Intent searchGroceryItemsIntent = new Intent(GroceryItemsMainActivity.this, SearchGroceryItemActivity.class);
+            startActivity(searchGroceryItemsIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

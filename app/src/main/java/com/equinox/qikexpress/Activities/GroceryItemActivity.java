@@ -27,6 +27,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.DataHolder.category1;
+import static com.equinox.qikexpress.Models.DataHolder.category2;
 import static com.equinox.qikexpress.Models.DataHolder.groceryItemCollectionCat2Mapping;
 
 public class GroceryItemActivity extends AppCompatActivity {
@@ -86,14 +88,6 @@ public class GroceryItemActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
-        MenuItem cartItem = menu.findItem(R.id.action_cart);
-        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
-                startActivity(groceryShoppingCartIntent);
-            }
-        });
         return true;
     }
 
@@ -103,7 +97,16 @@ public class GroceryItemActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+        if (id == R.id.action_search) {
+            Intent searchGroceryItemsIntent = new Intent(GroceryItemActivity.this, SearchGroceryItemActivity.class);
+            searchGroceryItemsIntent.putExtra("CATEGORY1", category1);
+            searchGroceryItemsIntent.putExtra("CATEGORY2", category2);
+            startActivity(searchGroceryItemsIntent);
+            return true;
+        }
         if (id == R.id.action_cart) {
+            Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
+            startActivity(groceryShoppingCartIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

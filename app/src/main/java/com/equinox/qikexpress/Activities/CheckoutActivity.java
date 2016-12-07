@@ -143,7 +143,7 @@ public class CheckoutActivity extends AppCompatActivity {
                         Map<String, Object> checkoutItemAdd = new HashMap<>();
                         String node = cartItem.getPlaceId()+cartItem.getItemId();
                         //TODO remove the comment below:
-                        //cartReference.child(node).removeValue();
+                        cartReference.child(node).removeValue();
                         checkoutItemAdd.put(node, itemMap);
                         checkoutReference.updateChildren(checkoutItemAdd);
                     }

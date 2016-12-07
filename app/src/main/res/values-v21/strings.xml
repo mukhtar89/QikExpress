@@ -2,4 +2,5 @@
 <resources>
     <string name="grocery_activity_name">Grocery List</string>
     <string name="action_search">Search</string>
+    <string name="search_grocery_item_hint">Search Grocery Item</string>
 </resources>

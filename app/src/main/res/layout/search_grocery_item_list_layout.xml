@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:id="@+id/search_grocery_item_card"
+    android:layout_margin="2dp"
+    card_view:cardElevation="2dp"
+    card_view:cardCornerRadius="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="8">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2">
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|center_horizontal"
+                android:id="@+id/search_grocery_item_image"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimary"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/search_grocery_item_name"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_orange_dark"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/search_grocery_item_price"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/search_grocery_item_cart_action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_margin="10dp"
+                app:borderWidth="0dp"
+                android:backgroundTint="@color/colorAccent"
+                app:srcCompat="@drawable/ic_add_shopping_cart_white_48dp"
+                app:fabSize="mini" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

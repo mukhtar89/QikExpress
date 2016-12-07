@@ -10,4 +10,11 @@
         android:icon="@drawable/ic_shopping_basket_white_48dp"
         app:showAsAction="always"
         android:title="0" />
+
+    <item
+        android:id="@+id/action_search"
+        android:orderInCategory="200"
+        android:icon="@drawable/ic_search_white_48dp"
+        app:showAsAction="always"
+        android:title="Search" />
 </menu>

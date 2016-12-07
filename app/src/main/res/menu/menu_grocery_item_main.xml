@@ -2,9 +2,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.equinox.qikexpress.Activities.GroceryItemsMainActivity">
+
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:title="@string/action_settings"
         app:showAsAction="never" />
 
@@ -16,4 +17,10 @@
         app:showAsAction="always"
         android:title="0" />
 
+    <item
+        android:id="@+id/action_search"
+        android:orderInCategory="200"
+        android:icon="@drawable/ic_search_white_48dp"
+        app:showAsAction="always"
+        android:title="Search" />
 </menu>
