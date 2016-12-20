@@ -18,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.equinox.qikexpress.Models.Constants.GEOCODE_API_KEY;
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 
 /**
  * Created by mukht on 11/18/2016.
@@ -69,40 +70,37 @@ public class FetchGeoAddress {
         AppVolleyController.getInstance().addToRequestQueue(placeDetailsReq);
     }
 
-    public void fetchCurrencyMetadata() {
+    public void fetchCurrencyMetadata(final Handler walletHandler) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/countryoperations/v1/country/search?countryCode=";
-                JsonObjectRequest ratingsReq = null;
-                try {
-                    ratingsReq = new JsonObjectRequest(baseURL + DataHolder.currentUser.getCurrentAddress()
-                            .getAddressElements().get(0).getName(), null, new Response.Listener<JSONObject>() {
-                                @Override
-                                public void onResponse(JSONObject response) {
-                                    Log.d(TAG, response.toString());
-                                    try {
-                                        if (response.has("items")) {
-                                            JSONArray countryArray = response.getJSONArray("items");
-                                            for (int i = 0; i < countryArray.length(); i++) {
-                                                JSONObject countryItemObject = countryArray.getJSONObject(i);
-                                                DataHolder.currentUser.setLocalCurrency(countryItemObject.getString("currencyCode"));
-                                                DataHolder.currentUser.setLocalCurrencySymbol(countryItemObject.getString("currencySymbol"));
-                                            }
+                JsonObjectRequest ratingsReq = new JsonObjectRequest(baseURL + currentUser.getPermAddress()
+                        .getAddressElements().get(0).getName(), null, new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Log.d(TAG, response.toString());
+                                try {
+                                    if (response.has("items")) {
+                                        JSONArray countryArray = response.getJSONArray("items");
+                                        for (int i = 0; i < countryArray.length(); i++) {
+                                            JSONObject countryItemObject = countryArray.getJSONObject(i);
+                                            currentUser.setLocalCurrency(countryItemObject.getString("currencyCode"));
+                                            currentUser.setLocalCurrencySymbol(countryItemObject.getString("currencySymbol"));
                                         }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
                                     }
+                                    if (walletHandler != null) walletHandler.sendMessage(new Message());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                                 }
-                            }, new Response.ErrorListener() {
-                                @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    VolleyLog.d(TAG, "Error: " + error.getMessage());
-                                }
-                            });
-                } catch (NullPointerException e) {
-                    fetchCurrencyMetadata();
-                } if (ratingsReq != null)
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                            }
+                        });
+                    if (ratingsReq != null)
                     AppVolleyController.getInstance().addToRequestQueue(ratingsReq);
                 return null;
             }

@@ -16,6 +16,7 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.equinox.qikexpress.Activities.GroceryItemDetailActivity;
 import com.equinox.qikexpress.Activities.GroceryItemsMainActivity;
 import com.equinox.qikexpress.Activities.SearchGroceryItemActivity;
+import com.equinox.qikexpress.Filters.GroceryItemFilter;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GroceryItem;
 import com.equinox.qikexpress.Models.GroceryItemCollection;
@@ -63,6 +64,14 @@ public class SearchGroceryItemAdapter extends RecyclerView.Adapter<SearchGrocery
             holder.groceryItemCartAction.setVisibility(View.GONE);
             holder.groceryItemImage.setImageUrl(groceryItemCollection.getItemImageList().get(0), DataHolder.getInstance().getImageLoader());
         }
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent groceryItemDetailIntent = new Intent(activity, GroceryItemDetailActivity.class);
+                groceryItemDetailIntent.putExtra("ITEM_NAME", groceryItemCollection.getItemName());
+                activity.startActivity(groceryItemDetailIntent);
+            }
+        });
         CartQuantityHandler cartQuantityHandler = new CartQuantityHandler(groceryItemCollection,
                 holder.groceryItemCartAction, holder.cardView, activity);
         cartQuantityHandler.execute();
@@ -78,7 +87,7 @@ public class SearchGroceryItemAdapter extends RecyclerView.Adapter<SearchGrocery
         return groceryItemList.size();
     }
 
-    class GroceryItemListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class GroceryItemListViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
         TextView groceryItemName, groceryItemPrice;
@@ -93,59 +102,14 @@ public class SearchGroceryItemAdapter extends RecyclerView.Adapter<SearchGrocery
             groceryItemImage = (NetworkImageView) itemView.findViewById(R.id.search_grocery_item_image);
             groceryItemCartAction = (FloatingActionButton) itemView.findViewById(R.id.search_grocery_item_cart_action);
         }
-
-        @Override
-        public void onClick(View v) {
-            Intent groceryItemDetailIntent = new Intent(activity, GroceryItemDetailActivity.class);
-            groceryItemDetailIntent.putExtra("ITEM_NAME", groceryItemList.get(getAdapterPosition()).getItemName());
-            activity.startActivity(groceryItemDetailIntent);
-        }
     }
 
     @Override
     public Filter getFilter() {
         if (groceryItemFilter == null)
-            groceryItemFilter = new GroceryItemFilter();
+            groceryItemFilter = new GroceryItemFilter(groceryItemList, this);
         return groceryItemFilter;
     }
 
-    /**
-     * Custom filter for friend list
-     * Filter content in friend list according to the search text
-     */
-    private class GroceryItemFilter extends Filter {
-
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            FilterResults filterResults = new FilterResults();
-            if (constraint !=null && constraint.length() > 0) {
-                List<GroceryItemCollection> tempList = new ArrayList<>();
-                // search content in friend list
-                for (GroceryItemCollection groceryItemCollection : fullGroceryItemList) {
-                    if (groceryItemCollection.getItemName().toLowerCase().contains(constraint.toString().toLowerCase())) {
-                        tempList.add(groceryItemCollection);
-                    }
-                }
-                filterResults.count = tempList.size();
-                filterResults.values = tempList;
-            } else {
-                filterResults.count = fullGroceryItemList.size();
-                filterResults.values = fullGroceryItemList;
-            }
-            return filterResults;
-        }
-
-        /**
-         * Notify about filtered list to ui
-         * @param constraint text
-         * @param results filtered result
-         */
-        @SuppressWarnings("unchecked")
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            groceryItemList = (ArrayList<GroceryItemCollection>) results.values;
-            notifyDataSetChanged();
-        }
-    }
 }
 

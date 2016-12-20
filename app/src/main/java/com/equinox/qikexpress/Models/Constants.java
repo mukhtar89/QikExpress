@@ -37,7 +37,7 @@ public interface Constants {
     String ITEM_VOL_UNIT = "itemVolUnit";
     String ITEM_BRAND_NAME = "itemBrandName";
     String ITEM_BRAND_IMAGE = "itemBrandImage";
-
+    String ITEM_STATUS = "itemStatus";
     String DRIVER = "deliveryBoy";
     String ORDER_ITEMS = "orderItems";
     String DEADLINE = "deadline";

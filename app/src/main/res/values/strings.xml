@@ -37,5 +37,6 @@
     <string name="title_activity_delivery_tracking">Track Delivery</string>
     <string name="title_activity_grocery_item_detail">GroceryItemDetailActivity</string>
     <string name="search_grocery_item_hint">Search Grocery Item</string>
+    <string name="search_grocery_hint">Search Grocery</string>
 
 </resources>

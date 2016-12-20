@@ -19,6 +19,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
+
 /**
  * Created by mukht on 11/7/2016.
  */
@@ -46,7 +48,7 @@ public class GroceryCartRecyclerAdapter extends RecyclerView.Adapter<GroceryCart
         holder.getGroceryName().setText(StringManipulation.CapsFirst(groceryItemCart.getPlaceName()));
         holder.getGroceryItemName().setText(groceryItemCart.getItemName());
         holder.getGroceryItemPrice().setText(groceryItemCart.getItemPriceValue() != null
-                ? DataHolder.currentUser.getLocalCurrency() + " " + groceryItemCart.getItemPriceValue().toString() : "N/A");
+                ? currentUser.getLocalCurrency() + " " + groceryItemCart.getItemPriceValue().toString() : "N/A");
         holder.getGroceryItemImage().setImageUrl(groceryItemCart.getItemImage(),
                 DataHolder.getInstance().getImageLoader());
         holder.getSaveForLaterSwitch().setChecked(groceryItemCart.getSaveForLater());

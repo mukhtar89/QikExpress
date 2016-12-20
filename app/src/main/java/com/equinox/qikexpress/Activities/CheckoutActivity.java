@@ -1,5 +1,7 @@
 package com.equinox.qikexpress.Activities;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
@@ -7,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -49,6 +53,7 @@ import static com.equinox.qikexpress.Models.Constants.PLACE_TYPE;
 import static com.equinox.qikexpress.Models.Constants.SAVE_FOR_LATER;
 import static com.equinox.qikexpress.Models.Constants.SHOP;
 import static com.equinox.qikexpress.Models.Constants.WALLET;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class CheckoutActivity extends AppCompatActivity {
 
@@ -62,56 +67,17 @@ public class CheckoutActivity extends AppCompatActivity {
     private Hashtable<String,Order> tempOrderTable = new Hashtable<>();
     private Hashtable<String,Integer> placeItemCount = new Hashtable<>();
     private GetPlaceDetails getPlaceDetails;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getPlaceDetails = new GetPlaceDetails(null, addressFetchHandler);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                walletReference = DataHolder.userDatabaseReference.child(WALLET).getRef();
-                walletReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.getValue() == null) walletAmount[0] = (float) 0.00;
-                        else if (dataSnapshot.getValue() instanceof Long)  walletAmount[0] = (float) (long) dataSnapshot.getValue();
-                        else walletAmount[0] = (float) (double) dataSnapshot.getValue();
-                        List<String> placeList = new ArrayList<>();
-                        for (Item item : checkoutItemsList) {
-                            if (!placeList.contains(item.getPlaceId()))
-                                placeList.add(item.getPlaceId());
-                            if (!placeItemCount.containsKey(item.getPlaceId())) placeItemCount.put(item.getPlaceId(), 1);
-                            else placeItemCount.put(item.getPlaceId(), placeItemCount.get(item.getPlaceId())+1);
-                        }
-                        for (String placeId : placeList) {
-                            Message message = new Message();
-                            message.obj = placeId;
-                            if (!DataHolder.getInstance().getPlaceMap().containsKey(placeId))
-                                getPlaceDetails.parseDetail(placeId, placeId);
-                            else if (DataHolder.getInstance().getPlaceMap().get(placeId).getAddress() != null)
-                                    addressFetchHandler.sendMessage(message);
-                            else if (!fetchGeoAddress.containsKey(placeId)) {
-                                fetchGeoAddress.put(placeId, new FetchGeoAddress());
-                                Location tempLocation = new Location(LocationManager.GPS_PROVIDER);
-                                tempLocation.setLatitude(DataHolder.getInstance().getPlaceMap().get(placeId).getLocation().latitude);
-                                tempLocation.setLongitude(DataHolder.getInstance().getPlaceMap().get(placeId).getLocation().longitude);
-                                fetchGeoAddress.get(placeId).fetchLocationGeoData(tempLocation, addressFetchHandler, message.obj);
-                            }
-                        }
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {     }
-                });
-                startActivity(new Intent(CheckoutActivity.this, TrackingActivity.class));
-            }
-        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        context = this;
+        getPlaceDetails = new GetPlaceDetails(null, addressFetchHandler);
 
         checkoutListView = (ListView) findViewById(R.id.checkout_list_items);
         checkoutListAdapter = new CheckoutListAdapter(checkoutItemsList, this);
@@ -134,7 +100,7 @@ public class CheckoutActivity extends AppCompatActivity {
                         }
                         cartItem = new Item();
                         cartItem.fromMap(iteratorObject);
-                        totalPrice+=cartItem.getItemPriceValue();
+                        if (cartItem.getItemPricePerWeight() != null) totalPrice+=cartItem.getItemPriceValue();
                         synchronized (DataHolder.lock) {
                             if (!checkoutItemsList.contains(cartItem))checkoutItemsList.add(cartItem);
                             checkoutListAdapter.notifyDataSetChanged();
@@ -152,6 +118,47 @@ public class CheckoutActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {   }
         });
+
+        FloatingActionButton orderFAB = (FloatingActionButton) findViewById(R.id.fab);
+        orderFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                walletReference = DataHolder.userDatabaseReference.child(WALLET).getRef();
+                walletReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.getValue() == null) walletAmount[0] = (float) 0.00;
+                        else if (dataSnapshot.getValue() instanceof Long)  walletAmount[0] = (float) (long) dataSnapshot.getValue();
+                        else walletAmount[0] = (float) (double) dataSnapshot.getValue();
+                        final List<String> placeList = new ArrayList<>();
+                        for (Item item : checkoutItemsList) {
+                            if (!placeList.contains(item.getPlaceId()))
+                                placeList.add(item.getPlaceId());
+                            if (!placeItemCount.containsKey(item.getPlaceId())) placeItemCount.put(item.getPlaceId(), 1);
+                            else placeItemCount.put(item.getPlaceId(), placeItemCount.get(item.getPlaceId())+1);
+                        }
+                        for (String placeId : placeList) {
+                            Message message = new Message();
+                            message.obj = placeId;
+                            if (!placeMap.containsKey(placeId))
+                                getPlaceDetails.parseDetail(placeId, placeId);
+                            else if (placeMap.get(placeId).getAddress() != null)
+                                addressFetchHandler.sendMessage(message);
+                            else if (!fetchGeoAddress.containsKey(placeId)) {
+                                fetchGeoAddress.put(placeId, new FetchGeoAddress());
+                                Location tempLocation = new Location(LocationManager.GPS_PROVIDER);
+                                tempLocation.setLatitude(placeMap.get(placeId).getLocation().latitude);
+                                tempLocation.setLongitude(placeMap.get(placeId).getLocation().longitude);
+                                fetchGeoAddress.get(placeId).fetchLocationGeoData(tempLocation, addressFetchHandler, message.obj);
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {     }
+                });
+                startActivity(new Intent(CheckoutActivity.this, TrackingActivity.class));
+            }
+        });
     }
 
     private Handler addressFetchHandler = new Handler(new Handler.Callback() {
@@ -163,10 +170,10 @@ public class CheckoutActivity extends AppCompatActivity {
                 if (item.getPlaceId().equals(msg.obj)) {
                     Order tempOrder = tempOrderTable.get(item.getPlaceId());
                     if (fetchGeoAddress.containsKey(item.getPlaceId())) {
-                        DataHolder.getInstance().getPlaceMap().get(item.getPlaceId())
+                        placeMap.get(item.getPlaceId())
                                 .setAddress(fetchGeoAddress.get(item.getPlaceId()).getAddress());
                     }
-                    tempOrder.setShop(DataHolder.getInstance().getPlaceMap().get(item.getPlaceId()));
+                    tempOrder.setShop(placeMap.get(item.getPlaceId()));
                     DatabaseReference businessReference =
                             DataHolder.database.getReference(BUSINESS).child(tempOrder.getShop().getBasePath())
                                     .child(item.getPlaceId());

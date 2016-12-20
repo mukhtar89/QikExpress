@@ -18,6 +18,7 @@ import com.equinox.qikexpress.Models.Periods;
 import com.equinox.qikexpress.Models.Photo;
 import com.equinox.qikexpress.Models.Place;
 import com.equinox.qikexpress.Models.RatingsManager;
+import com.equinox.qikexpress.Utils.MapUtils.DistanceRequest;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -29,6 +30,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.equinox.qikexpress.Models.DataHolder.location;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
+
 /**
  * Created by mukht on 11/2/2016.
  */
@@ -38,6 +42,7 @@ public class GetPlaceDetails {
     private String TAG = GetPlaceDetails.class.getSimpleName();
     private Dialog pDialog;
     private Handler placeHandler;
+    private Message message;
 
     public GetPlaceDetails(Dialog pDialog, Handler placeHandler) {
         this.pDialog = pDialog;
@@ -51,21 +56,8 @@ public class GetPlaceDetails {
             JsonObjectRequest placeDetailsReq = new JsonObjectRequest(baseURL+urlArguments, null, placeJSONListener, placeJSONErrorListener);
             AppVolleyController.getInstance().addToRequestQueue(placeDetailsReq);
         }
-        AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-            @Override
-            public void onRequestFinished(Request<Object> request) {
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        hidePDialog();
-                        Message message = new Message();
-                        if (arguments != null) message.obj = arguments;
-                        if (placeHandler != null) placeHandler.sendMessage(message);
-                    }
-                },1000);
-                AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(this);
-            }
-        });
+        message = new Message();
+        if (arguments != null) message.obj = arguments;
     }
 
     private Response.Listener<JSONObject> placeJSONListener = new Response.Listener<JSONObject>() {
@@ -73,12 +65,12 @@ public class GetPlaceDetails {
         public void onResponse(JSONObject response) {
             Log.d(TAG, response.toString());
             try {
-                Place place = new Place();
+                final Place place = new Place();
                 if (response.has("result")) {
                     JSONObject resultObj = response.getJSONObject("result");
                     JSONObject geometry = resultObj.getJSONObject("geometry");
-                    JSONObject location = geometry.getJSONObject("location");
-                    place.setLocation(new LatLng(location.getDouble("lat"), location.getDouble("lng")));
+                    JSONObject locationObj = geometry.getJSONObject("location");
+                    place.setLocation(new LatLng(locationObj.getDouble("lat"), locationObj.getDouble("lng")));
                     place.setIconURL(resultObj.getString("icon"));
                     place.setName(resultObj.getString("name"));
                     if (resultObj.has("opening_hours")) {
@@ -137,13 +129,31 @@ public class GetPlaceDetails {
                         address.getAddressElements().add(tempAddressElement);
                     }
                     place.setAddress(address);
-
                     place.setPhoneNumber(resultObj.getString("international_phone_number"));
-                    if (DataHolder.getInstance().getPlaceMap().containsKey(place.getPlaceId()))
-                        DataHolder.getInstance().getPlaceMap().put(place.getPlaceId(),
-                                DataHolder.getInstance().getPlaceMap().get(place.getPlaceId()).mergePlace(place));
-                    else DataHolder.getInstance().getPlaceMap().put(place.getPlaceId(), place);
+                    if (placeMap.containsKey(place.getPlaceId()))
+                        placeMap.put(place.getPlaceId(), placeMap.get(place.getPlaceId()).mergePlace(place));
+                    else placeMap.put(place.getPlaceId(), place);
                     //TODO add place to the type of Place: example, grocery, restaurant, etc
+                    if (place.getDistanceFromCurrent() == null) {
+                        Handler handleDistance = new Handler(new Handler.Callback() {
+                            @Override
+                            public boolean handleMessage(Message msg) {
+                                String[] params = (String[]) msg.obj;
+                                place.setDistanceFromCurrent(params[0]);
+                                place.setTimeFromCurrent(params[1]);
+                                placeMap.put(place.getPlaceId(), placeMap.get(place.getPlaceId()).mergePlace(place));
+                                hidePDialog();
+                                if (placeHandler != null) placeHandler.sendMessage(message);
+                                return false;
+                            }
+                        });
+                        DistanceRequest distanceRequest = new DistanceRequest(handleDistance);
+                        distanceRequest.execute(new LatLng(location.getLatitude(), location.getLongitude()),
+                                new LatLng(place.getLocation().latitude, place.getLocation().longitude));
+                    } else {
+                        hidePDialog();
+                        if (placeHandler != null) placeHandler.sendMessage(message);
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -165,6 +175,6 @@ public class GetPlaceDetails {
     }
 
     public List<RatingsManager> returnRatingsList(String placeId) {
-        return DataHolder.getInstance().getPlaceMap().get(placeId).getIndividualRatings();
+        return placeMap.get(placeId).getIndividualRatings();
     }
 }

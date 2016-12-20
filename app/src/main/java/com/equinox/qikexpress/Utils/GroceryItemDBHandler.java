@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.equinox.qikexpress.Models.DataHolder.currentGroceryItemCollections;
+import static com.equinox.qikexpress.Models.DataHolder.groceryMap;
 
 /**
  * Created by mukht on 11/4/2016.
@@ -43,7 +44,7 @@ public class GroceryItemDBHandler {
     }
 
     public void getCategoryMapping() {
-        String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/grocerycategoryoperations/v1/groceryCategory/all";
+        String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/grocerycategoryoperations/v1/groceryCategory/all?detail=false";
         JsonObjectRequest categoriesReq = new JsonObjectRequest(baseURL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -130,7 +131,7 @@ public class GroceryItemDBHandler {
                             groceryItem.setItemWeightLoose(groceryItemObject.getBoolean("weightLoose"));
                             groceryItem.setItemWeightScaleMultiplicand((float) groceryItemObject.getDouble("weightScaleMultiplicand"));
                             groceryItem.setItemVolumeScaleMultiplicand((float) groceryItemObject.getDouble("volumeScaleMultiplicand"));
-                            groceryItem.setPlaceName(DataHolder.getInstance().getGroceryMap().get(placeId).getName());
+                            groceryItem.setPlaceName(groceryMap.get(placeId).getName());
 
                             if (!currentGroceryItemCollections.containsKey(groceryItem.getItemName()))
                                 currentGroceryItemCollections.put(groceryItem.getItemName(), new GroceryItemCollection().insert(groceryItem));

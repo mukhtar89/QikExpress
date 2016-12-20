@@ -45,9 +45,19 @@
         </activity>
         <activity
             android:name=".Activities.GroceryListActivity"
+            android:configChanges="orientation"
             android:label="@string/grocery_activity_name"
+            android:launchMode="singleTop"
             android:parentActivityName=".Activities.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable_grocery" />
+        </activity>
         <activity
             android:name=".Activities.GroceryItemsMainActivity"
             android:label="@string/title_activity_grocery_item"
@@ -123,9 +133,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.equinox.qikexpress.Activities.GroceryItemActivity" />
         </activity>
-        <activity android:name=".Activities.SearchGroceryItemActivity"
-            android:theme="@style/FullHeightDialog"
-            android:launchMode="singleTop">
+        <activity
+            android:name=".Activities.SearchGroceryItemActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/FullHeightDialog">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -133,6 +144,15 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable_grocery_item" />
         </activity>
+
+        <service
+            android:name=".Services.ConsumerService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".Services.OrderService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

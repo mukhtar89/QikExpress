@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,6 +21,8 @@ import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Grocery;
 import com.equinox.qikexpress.Models.Photo;
 import com.equinox.qikexpress.Models.Place;
+import com.equinox.qikexpress.Utils.MapUtils.DistanceRequest;
+import com.equinox.qikexpress.ViewHolders.GroceryListRecyclerViewHolder;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -33,6 +36,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.equinox.qikexpress.Models.DataHolder.location;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
+
 /**
  * Created by mukht on 10/30/2016.
  */
@@ -42,35 +48,33 @@ public class GetGooglePlaces<T extends Place> {
     private String TAG = GetGooglePlaces.class.getSimpleName();
     private String NORMAL = "1", SECONDARY = "2";
     private QikList placeType;
-    private Dialog pDialog;
     private Handler[] placeHandlers;
     private List<T> placeList = new ArrayList<>();
     private HashSet<String> loadedPlaces;
 
-    public GetGooglePlaces(QikList placeType, Dialog pDialog, Handler[] placeHandlers) {
+    public GetGooglePlaces(QikList placeType, Handler[] placeHandlers) {
         this.placeType = placeType;
-        this.pDialog = pDialog;
         this.placeHandlers = placeHandlers;
         loadedPlaces = new HashSet<>();
     }
 
     public synchronized void parsePlaces(final Location location, final Integer pagination) {
-        placeList = new ArrayList<>();
+        //placeList = new ArrayList<>();
         String baseURL = "https://maps.googleapis.com/maps/api/place/search/json?";
-        String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*1000
+        String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                 + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
         JsonObjectRequest placeReq = new JsonObjectRequest(baseURL+urlArguments, null, placesListener, placesErrorListener);
         AppVolleyController.getInstance().addToRequestQueue(placeReq, NORMAL);
         for (String keyword : Arrays.asList(placeType.getKeyword())) {
             baseURL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
-            urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*1000
+            urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                     + "&keyword=" + keyword+ "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
             JsonObjectRequest placeReqSecondary = new JsonObjectRequest(baseURL+urlArguments, null, placesListener, placesErrorListener);
             AppVolleyController.getInstance().addToRequestQueue(placeReqSecondary, SECONDARY);
         }
         AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
             @Override
-            public void onRequestFinished(Request<Object> request) {
+            public void onRequestFinished(final Request<Object> request) {
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -82,8 +86,6 @@ public class GetGooglePlaces<T extends Place> {
                             placeHandlers[0].sendMessage(message);
                             return;
                         }
-                        hidePDialog();
-                        placeHandlers[1].sendMessage(new Message());
                     }
                 },1000);
                 AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(this);
@@ -103,10 +105,10 @@ public class GetGooglePlaces<T extends Place> {
                         JSONObject obj = listObjects.getJSONObject(i);
                         //Place place = (Place) Class.forName(placeType.getListName()).newInstance();
                         Class<T> type = (Class<T>) Class.forName("com.equinox.qikexpress.Models."+placeType.getListName());
-                        T place = type.newInstance();
+                        final T place = type.newInstance();
                         if (!loadedPlaces.contains(obj.getString("place_id"))){
-                            JSONObject location = obj.getJSONObject("geometry").getJSONObject("location");
-                            place.setLocation(new LatLng(location.getDouble("lat"), location.getDouble("lng")));
+                            JSONObject locationObj = obj.getJSONObject("geometry").getJSONObject("location");
+                            place.setLocation(new LatLng(locationObj.getDouble("lat"), locationObj.getDouble("lng")));
                             place.setIconURL(obj.getString("icon"));
                             place.setName(obj.getString("name"));
                             if (obj.has("opening_hours")) {
@@ -121,18 +123,32 @@ public class GetGooglePlaces<T extends Place> {
                             }
                             place.setPlaceId(obj.getString("place_id"));
                             place.setVicinity(obj.getString("vicinity"));
-                            if (DataHolder.getInstance().getPlaceMap().containsKey(place.getPlaceId()))
-                                DataHolder.getInstance().getPlaceMap().put(place.getPlaceId(),
-                                        DataHolder.getInstance().getPlaceMap().get(place.getPlaceId()).mergePlace(place));
-                            else DataHolder.getInstance().getPlaceMap().put(place.getPlaceId(), place);
+                            if (placeMap.containsKey(place.getPlaceId()))
+                                placeMap.put(place.getPlaceId(),
+                                        placeMap.get(place.getPlaceId()).mergePlace(place));
+                            else placeMap.put(place.getPlaceId(), place);
                             synchronized (DataHolder.lock) {
                                 placeList.add(place);
                                 loadedPlaces.add(obj.getString("place_id"));
                             }
+                            Handler handleDistance = new Handler(new Handler.Callback() {
+                                @Override
+                                public boolean handleMessage(Message msg) {
+                                    String[] params = (String[]) msg.obj;
+                                    place.setDistanceFromCurrent(params[0]);
+                                    place.setTimeFromCurrent(params[1]);
+                                    placeMap.put(place.getPlaceId(),
+                                            placeMap.get(place.getPlaceId()).mergePlace(place));
+                                    placeHandlers[1].sendMessage(new Message());
+                                    return false;
+                                }
+                            });
+                            DistanceRequest distanceRequest = new DistanceRequest(handleDistance);
+                            distanceRequest.execute(new LatLng(location.getLatitude(), location.getLongitude()),
+                                    new LatLng(place.getLocation().latitude, place.getLocation().longitude));
                         }
                     }
                 }
-
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (InstantiationException e) {
@@ -149,14 +165,10 @@ public class GetGooglePlaces<T extends Place> {
         @Override
         public void onErrorResponse(VolleyError error) {
             VolleyLog.d(TAG, "Error: " + error.getMessage());
-            hidePDialog();
+            placeHandlers[2].sendMessage(new Message());
         }
     };
 
-    private void hidePDialog() {
-        if (pDialog != null)
-            pDialog.dismiss();
-    }
 
     public List<T> returnPlaceList() {
         return placeList;

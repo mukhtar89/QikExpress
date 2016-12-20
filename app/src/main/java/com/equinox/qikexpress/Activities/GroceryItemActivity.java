@@ -30,6 +30,7 @@ import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
 import static com.equinox.qikexpress.Models.DataHolder.category1;
 import static com.equinox.qikexpress.Models.DataHolder.category2;
 import static com.equinox.qikexpress.Models.DataHolder.groceryItemCollectionCat2Mapping;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class GroceryItemActivity extends AppCompatActivity {
 
@@ -50,7 +51,7 @@ public class GroceryItemActivity extends AppCompatActivity {
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
         String placeId = getIntent().getStringExtra("PLACE_ID");
-        if (!DataHolder.getInstance().getPlaceMap().get(placeId).getPartner()) {
+        if (!placeMap.get(placeId).getPartner()) {
             Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout),
                     "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
@@ -88,6 +89,14 @@ public class GroceryItemActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
+                startActivity(groceryShoppingCartIntent);
+            }
+        });
         return true;
     }
 
@@ -105,8 +114,6 @@ public class GroceryItemActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_cart) {
-            Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
-            startActivity(groceryShoppingCartIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

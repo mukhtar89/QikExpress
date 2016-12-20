@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.equinox.qikexpress.Models.Constants.ROLES;
 import static com.equinox.qikexpress.Models.Constants.USER_METADATA;
@@ -34,8 +35,8 @@ public class DataHolder {
         return ourInstance;
     }
 
-    public Map<String,Place> placeMap = new Hashtable<>();
-    public Map<String,Grocery> groceryMap = new Hashtable<>();
+    public static Map<String,Place> placeMap = new Hashtable<>();
+    public static Map<String,Grocery> groceryMap = new Hashtable<>();
     public static List<Grocery> groceryList = new ArrayList<>();
 
     public static Hashtable<String,GroceryItemCollection> currentGroceryItemCollections = new Hashtable<>();
@@ -62,13 +63,6 @@ public class DataHolder {
                 groceryMap.put(groceryList.get(i).getPlaceId(), groceryList.get(i));
             }
         }
-    }
-
-    public Map<String,Place> getPlaceMap() {
-        return placeMap;
-    }
-    public Map<String,Grocery> getGroceryMap() {
-        return groceryMap;
     }
 
     public ImageLoader getImageLoader() {

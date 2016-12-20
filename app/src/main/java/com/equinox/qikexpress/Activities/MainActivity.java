@@ -43,6 +43,7 @@ import com.google.gson.Gson;
 import static com.equinox.qikexpress.Models.Constants.CONSUMER;
 import static com.equinox.qikexpress.Models.Constants.ORDERS;
 import static com.equinox.qikexpress.Models.Constants.USER;
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 import static com.equinox.qikexpress.Models.DataHolder.database;
 import static com.equinox.qikexpress.Models.DataHolder.location;
 import static com.equinox.qikexpress.Models.DataHolder.userDatabaseReference;
@@ -226,9 +227,9 @@ public class MainActivity extends AppCompatActivity
         public boolean handleMessage(Message msg) {
             if (FirebaseAuth.getInstance().getCurrentUser() != null && location != null && fetchGeoAddress != null) {
                 GeoAddress address = fetchGeoAddress.getAddress();
-                DataHolder.currentUser.setCurrentAddress(address);
-                DataHolder.currentUser.setCurrentLocation(new LatLng(location.getLatitude(), location.getLongitude()));
-                fetchGeoAddress.fetchCurrencyMetadata();
+                currentUser.setCurrentAddress(address);
+                currentUser.setCurrentLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+                fetchGeoAddress.fetchCurrencyMetadata(null);
                 DataHolder.getInstance().generateMetadata(sharedPreferences);
             }
             return false;
@@ -238,14 +239,14 @@ public class MainActivity extends AppCompatActivity
     private void prepFirebaseData() {
         userDatabaseReference =
                 database.getReference(USER).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        DataHolder.currentUser = new User();
+        if (currentUser == null) currentUser = new User();
         Gson gsonUser = new Gson();
         String jsonAddress = sharedPreferences.getString("permAddress", "");
         if (!jsonAddress.isEmpty())
-            DataHolder.currentUser.setPermAddress(gsonUser.fromJson(jsonAddress, GeoAddress.class));
+            currentUser.setPermAddress(gsonUser.fromJson(jsonAddress, GeoAddress.class));
         String jsonPermLocation = sharedPreferences.getString("permLocation", "");
         if (!jsonPermLocation.isEmpty())
-            DataHolder.currentUser.setPermLocation(gsonUser.fromJson(jsonPermLocation, LatLng.class));
+            currentUser.setPermLocation(gsonUser.fromJson(jsonPermLocation, LatLng.class));
         DataHolder.getInstance().setRole(CONSUMER);
         DataHolder.ordersReference = userDatabaseReference.child(ORDERS).getRef();
         addressFetchHandler.sendMessage(new Message());

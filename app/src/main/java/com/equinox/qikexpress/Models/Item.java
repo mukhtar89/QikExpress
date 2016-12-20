@@ -13,6 +13,7 @@ import static com.equinox.qikexpress.Models.Constants.ITEM_IMAGE;
 import static com.equinox.qikexpress.Models.Constants.ITEM_NAME;
 import static com.equinox.qikexpress.Models.Constants.ITEM_PRICE;
 import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
+import static com.equinox.qikexpress.Models.Constants.ITEM_STATUS;
 import static com.equinox.qikexpress.Models.Constants.ITEM_VOL;
 import static com.equinox.qikexpress.Models.Constants.ITEM_VOL_UNIT;
 import static com.equinox.qikexpress.Models.Constants.ITEM_WEIGHT;
@@ -34,7 +35,7 @@ public class Item {
     private String countryCode, currencyCode, currencySymbol;
 
     private String itemCustomSize;
-    private Boolean itemWeightLoose, itemVolLoose;
+    private Boolean itemWeightLoose, itemVolLoose, itemStatus;
     private Float itemPricePerWeight, itemPricePerVol;
     private Float itemPriceValue, itemWeight, itemVol;
     private String itemWeightUnit, itemVolumeUnit;
@@ -57,6 +58,7 @@ public class Item {
         result.put(ITEM_BRAND_IMAGE, itemBrandImage);
         result.put(PLACE_NAME, placeName);
         result.put(ITEM_QTY, itemQuantity);
+        result.put(ITEM_STATUS, itemStatus);
         return result;
     }
 
@@ -103,6 +105,7 @@ public class Item {
         if (entry.containsKey(ITEM_VOL_UNIT)) itemVolumeUnit = (String) entry.get(ITEM_VOL_UNIT);
         if (entry.containsKey(ITEM_BRAND_NAME)) itemBrandName = (String) entry.get(ITEM_BRAND_NAME);
         if (entry.containsKey(ITEM_BRAND_IMAGE)) itemBrandImage = (String) entry.get(ITEM_BRAND_IMAGE);
+        if (entry.containsKey(ITEM_STATUS)) itemStatus = (Boolean) entry.get(ITEM_STATUS);
         return this;
     }
 

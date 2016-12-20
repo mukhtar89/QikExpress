@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by mukht on 11/3/2016.
  */
-public class GroceryItem  extends  Item{
+public class GroceryItem  extends Item {
 
     private List<String> catLevel;
 

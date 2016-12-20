@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.Exclude;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LAT;
 import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LNG;
@@ -106,7 +107,7 @@ public class User {
     }
 
     @Exclude
-    public User fromMap(HashMap<String,Object> userMap) {
+    public User fromMap(Map<String,Object> userMap) {
         id = (String) userMap.get("id");
         name = (String) userMap.get("name");
         email = (String) userMap.get("email");

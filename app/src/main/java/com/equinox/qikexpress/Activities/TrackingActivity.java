@@ -12,7 +12,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,6 +28,8 @@ import com.baoyachi.stepview.bean.StepBean;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Order;
 import com.equinox.qikexpress.R;
+import com.equinox.qikexpress.Services.OrderService;
+import com.equinox.qikexpress.Utils.AppVolleyController;
 import com.equinox.qikexpress.Utils.GetOrders;
 import com.equinox.qikexpress.Utils.MapUtils.DistanceRequest;
 import com.equinox.qikexpress.Utils.StringManipulation;
@@ -39,8 +40,10 @@ import java.util.Hashtable;
 import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.ORDER_ID;
+import static com.equinox.qikexpress.Models.DataHolder.orderList;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
-public class TrackingActivity extends AppCompatActivity {
+public class TrackingActivity extends BaseOrderActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -110,9 +113,40 @@ public class TrackingActivity extends AppCompatActivity {
         });
 
         pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Loading...");
+        pDialog.setMessage("Loading your orders...");
         pDialog.show();
-        GetOrders.getOrders(orderListHandler, pDialog);
+    }
+
+    @Override
+    protected void onServiceConnected() {
+        getConsumerServiceInterface().setOrdersHandler(orderListHandler);
+        if (orderList.isEmpty())
+            getConsumerServiceInterface().getOrders();
+        else orderListHandler.sendMessage(new Message());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AppVolleyController.activityResumed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppVolleyController.activityPaused();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        stopService(new Intent(this, OrderService.class));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        startService(new Intent(this, OrderService.class));
     }
 
     private Handler orderListHandler = new Handler(new Handler.Callback() {
@@ -190,7 +224,7 @@ public class TrackingActivity extends AppCompatActivity {
             }
         });
         if (order.getShop().getDistanceFromCurrent() == null) {
-            if (DataHolder.getInstance().getPlaceMap().containsKey(order.getShop().getPlaceId()))
+            if (placeMap.containsKey(order.getShop().getPlaceId()))
                 new DistanceRequest(handleDistance).execute(new LatLng(DataHolder.location.getLatitude(), DataHolder.location.getLongitude()),
                         new LatLng(order.getShop().getLocation().latitude, order.getShop().getLocation().longitude));
         } else {

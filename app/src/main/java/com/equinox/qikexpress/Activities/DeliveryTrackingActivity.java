@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.ORDER_ID;
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 
-public class DeliveryTrackingActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class DeliveryTrackingActivity extends BaseOrderActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private LocationPermission locationPermission;
@@ -63,8 +64,8 @@ public class DeliveryTrackingActivity extends AppCompatActivity implements OnMap
         setUpMap();
         List<Marker> markers = new ArrayList<>();
         MarkerOptions markerUserOptions = new MarkerOptions();
-        markerUserOptions.position(DataHolder.currentUser.getPermLocation())
-                .title(DataHolder.currentUser.getName())
+        markerUserOptions.position(currentUser.getPermLocation())
+                .title(currentUser.getName())
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person_black_24dp));
         Marker markerUser = mMap.addMarker(markerUserOptions);
         markerUser.showInfoWindow();
@@ -103,10 +104,10 @@ public class DeliveryTrackingActivity extends AppCompatActivity implements OnMap
             /*if (fusedLocationService.returnLocation() != null) {
                 if (oldLocation == null) {
                     oldLocation = new LatLng(fusedLocationService.returnLocation().getLatitude(), fusedLocationService.returnLocation().getLongitude());
-                    fetchOrders(oldLocation);
+                    getOrders(oldLocation);
                 } else if (SphericalUtil.computeDistanceBetween(oldLocation, new LatLng(fusedLocationService.returnLocation().getLatitude(), fusedLocationService.returnLocation().getLongitude()))
                         > showRange.getSelectedItemPosition()*1000) {
-                    fetchOrders(oldLocation);
+                    getOrders(oldLocation);
                     oldLocation = new LatLng(fusedLocationService.returnLocation().getLatitude(), fusedLocationService.returnLocation().getLongitude())
                 }
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(fusedLocationService.returnLocation().getLatitude(), fusedLocationService.returnLocation().getLongitude()), 13));

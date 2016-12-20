@@ -27,7 +27,6 @@ import com.equinox.qikexpress.Adapters.GroceryExpandableListAdapter;
 import com.equinox.qikexpress.Models.Constants;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Grocery;
-import com.equinox.qikexpress.Models.GroceryItem;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.AppVolleyController;
 import com.equinox.qikexpress.Utils.GroceryItemDBHandler;
@@ -46,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.DataHolder.categoryImageMapping;
+import static com.equinox.qikexpress.Models.DataHolder.groceryMap;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class GroceryItemsMainActivity extends AppCompatActivity {
 
@@ -77,7 +79,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         distance = (TextView) findViewById(R.id.dist);
         time = (TextView) findViewById(R.id.time);
 
-        grocery = DataHolder.getInstance().getGroceryMap().get(getIntent().getStringExtra("PLACE_ID"));
+        grocery = groceryMap.get(getIntent().getStringExtra("PLACE_ID"));
         getSupportActionBar().setTitle(StringManipulation.CapsFirst(grocery.getName()));
         Log.d(TAG, "Place ID: " + grocery.getPlaceId());
 
@@ -86,11 +88,13 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             openNow.getBackground().setColorFilter(getResources()
                     .getColor(grocery.getOpenNow() ? R.color.green: R.color.red), PorterDuff.Mode.SRC_ATOP);
         }
-        distance.setText(grocery.getDistanceFromCurrent().toString()+" km");
-        time.setText(grocery.getTimeFromCurrent().toString()+" min");
+        if (grocery.getDistanceFromCurrent() != null && grocery.getTimeFromCurrent() != null) {
+            distance.setText(grocery.getDistanceFromCurrent().toString() + " km");
+            time.setText(grocery.getTimeFromCurrent().toString() + " min");
+        }
         vicinity.setText(grocery.getVicinity());
         if (grocery.getBrandImage() == null) getGroceryData();
-        else groceryDBHeaderHanlder.sendMessage(new Message());
+        else groceryDBHeaderHandler.sendMessage(new Message());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -108,15 +112,15 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
         pDialog.show();
 
         grocery.setPartner(true);
-        DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).setPartner(true);
-        DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).setPartner(true);
+        placeMap.get(grocery.getPlaceId()).setPartner(true);
+        groceryMap.get(grocery.getPlaceId()).setPartner(true);
         expListView = (ExpandableListView) findViewById(R.id.grocery_items_expandable);
         listAdapter = new GroceryExpandableListAdapter(listDataHeader, listDataChild, groceryCategoriesMapping, this, grocery.getPlaceId());
         expListView.setAdapter(listAdapter);
         groceryItemDBHandler = new GroceryItemDBHandler(pDialog, groceryDBItemsCallbackHandler);
-        if (DataHolder.categoryImageMapping.isEmpty())
+        if (categoryImageMapping.isEmpty())
             groceryItemDBHandler.getCategoryMapping();
-        else groceryCategoriesMapping = DataHolder.categoryImageMapping;
+        else groceryCategoriesMapping = categoryImageMapping;
         groceryItemDBHandler.parseChildren(grocery.getPlaceId(), true);
     }
 
@@ -138,27 +142,27 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                             grocery.getPhoto().setPhotoReference(groceryObject.getString("photoReference"));
                         }
                         grocery.setCountryCode(groceryObject.getString("countryCode"));
-                        DataHolder.getInstance().getGroceryMap().put(grocery.getPlaceId(),
-                                DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).mergeGrocery(grocery));
-                        DataHolder.getInstance().getPlaceMap().put(grocery.getPlaceId(),
-                                DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).mergePlace(grocery));
+                        groceryMap.put(grocery.getPlaceId(),
+                                groceryMap.get(grocery.getPlaceId()).mergeGrocery(grocery));
+                        placeMap.put(grocery.getPlaceId(),
+                                placeMap.get(grocery.getPlaceId()).mergePlace(grocery));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                groceryDBHeaderHanlder.sendMessage(new Message());
+                groceryDBHeaderHandler.sendMessage(new Message());
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
-                groceryDBHeaderHanlder.sendMessage(new Message());
+                groceryDBHeaderHandler.sendMessage(new Message());
             }
         });
         AppVolleyController.getInstance().addToRequestQueue(placeReq);
     }
 
-    private Handler groceryDBHeaderHanlder = new Handler(new Handler.Callback() {
+    private Handler groceryDBHeaderHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (grocery.getPhoto() != null) {
@@ -186,7 +190,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             if (msg.arg1 == 0) {
                 groceryCategoriesMapping.clear();
                 groceryCategoriesMapping.putAll(groceryItemDBHandler.returnCategories());
-                DataHolder.categoryImageMapping = groceryCategoriesMapping;
+                categoryImageMapping = groceryCategoriesMapping;
                 if (!listDataChild.isEmpty())
                     listAdapter.notifyDataSetChanged();
             }
@@ -196,8 +200,8 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 if (listDataChild.isEmpty()) {
                     groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
                     grocery.setPartner(false);
-                    DataHolder.getInstance().getPlaceMap().get(grocery.getPlaceId()).setPartner(false);
-                    DataHolder.getInstance().getGroceryMap().get(grocery.getPlaceId()).setPartner(false);
+                    placeMap.get(grocery.getPlaceId()).setPartner(false);
+                    groceryMap.get(grocery.getPlaceId()).setPartner(false);
                     pDialog.show();
                     return false;
                 }
@@ -235,6 +239,14 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         });
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent groceryShoppingCartIntent = new Intent(GroceryItemsMainActivity.this, GroceryShoppingCartActivity.class);
+                startActivity(groceryShoppingCartIntent);
+            }
+        });
         return true;
     }
 
@@ -245,8 +257,6 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_cart) {
-            Intent groceryShoppingCartIntent = new Intent(GroceryItemsMainActivity.this, GroceryShoppingCartActivity.class);
-            startActivity(groceryShoppingCartIntent);
             return true;
         }
         if (id == R.id.action_search) {

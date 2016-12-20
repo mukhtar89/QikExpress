@@ -1,28 +1,22 @@
 package com.equinox.qikexpress.Activities;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AlertDialog;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,22 +24,21 @@ import com.equinox.qikexpress.Adapters.GroceryListRecyclerAdapter;
 import com.equinox.qikexpress.Enums.QikList;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Grocery;
-import com.equinox.qikexpress.Models.Place;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.GetGooglePlaces;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
-import com.equinox.qikexpress.Utils.ListSortFunc;
-import com.equinox.qikexpress.Utils.LocationPermission;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
 
-public class GroceryListActivity extends AppCompatActivity {
+public class GroceryListActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private HybridLayoutManager layoutManager;
     private GetGooglePlaces<Grocery> getGooglePlaces;
@@ -54,10 +47,9 @@ public class GroceryListActivity extends AppCompatActivity {
     private List<Grocery> groceryList = new ArrayList<>();
     private ProgressDialog pDialog;
     private GroceryListRecyclerAdapter listRecyclerAdapter;
-    private LinearLayout sortBy, filterBy;
+    private LinearLayout sortBy, filterBy, trackOrders;
     private TextView cartCount;
     private Context context;
-    private ListSortFunc<Grocery> sortFunc = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,15 +67,16 @@ public class GroceryListActivity extends AppCompatActivity {
         } else {
             pDialog = new ProgressDialog(this);
             // Showing progress dialog before making http request
-            pDialog.setMessage("Loading...");
+            pDialog.setMessage("Loading Groceries Nearby...");
+            pDialog.setCancelable(false);
             pDialog.show();
 
             pagination = 1;
-            getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, pDialog, new Handler[]{loopUntilLoad, updateDataListView});
+            getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, new Handler[]{loopUntilLoad, updateDataListView, dismissDialog});
             getGooglePlaces.parsePlaces(DataHolder.location, pagination);
 
             layoutManager = new HybridLayoutManager(this);
-            listRecyclerAdapter = new GroceryListRecyclerAdapter(this, groceryList, DataHolder.location, loadMoreAction);
+            listRecyclerAdapter = new GroceryListRecyclerAdapter(this, groceryList, loadMoreAction);
             recyclerView = (RecyclerView) findViewById(R.id.grocery_grid_view);
             recyclerView.setLayoutManager(layoutManager.getLayoutManager(300));
             recyclerView.setHasFixedSize(true);
@@ -97,42 +90,47 @@ public class GroceryListActivity extends AppCompatActivity {
                     popup.getMenuInflater().inflate(R.menu.sort_by_popup_menu, popup.getMenu());
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         public boolean onMenuItemClick(MenuItem item) {
-                            Message message = new Message();
-                            message.arg1 = item.getTitle().equals("By Distance") ? 1 : 2;
-                            sortHandler.sendMessage(message);
+                            switch (item.getItemId()) {
+                                case R.id.dist:
+                                    Collections.sort(groceryList, new Comparator<Grocery>() {
+                                        @Override
+                                        public int compare(Grocery lhs, Grocery rhs) {
+                                            return lhs.getDistanceFromCurrent().compareTo(rhs.getDistanceFromCurrent());
+                                        }
+                                    });
+                                    break;
+                                case R.id.time:
+                                    Collections.sort(groceryList, new Comparator<Grocery>() {
+                                        @Override
+                                        public int compare(Grocery lhs, Grocery rhs) {
+                                            return lhs.getTimeFromCurrent().compareTo(rhs.getTimeFromCurrent());
+                                        }
+                                    });
+                                    break;
+                            }
+                            listRecyclerAdapter.notifyDataSetChanged();
                             return true;
                         }
                     });
                     popup.show();
                 }
             });
+            trackOrders = (LinearLayout) findViewById(R.id.track_order);
+            trackOrders.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(GroceryListActivity.this, TrackingActivity.class));
+                }
+            });
         }
     }
-
-    private Handler sortHandler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (sortFunc == null)
-                sortFunc = new ListSortFunc<>(Grocery.class, groceryList.size(), sortHandler, context);
-            List<Grocery> tempList = new ArrayList<>();
-            if (msg.arg1 == 1)  tempList = sortFunc.sortByDistance(groceryList.toArray());
-            else if (msg.arg1 == 2)  tempList = sortFunc.sortByTime(groceryList.toArray());
-            if (tempList != null) {
-                groceryList.clear();
-                groceryList.addAll(tempList);
-                listRecyclerAdapter.notifyDataSetChanged();
-            }
-            return false;
-        }
-    });
 
     private Handler loadMoreAction = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            if (!pDialog.isShowing())
-                pDialog.show();
+            showpDialog();
             pagination++;
-            if (pagination < 50) getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            if (pagination < 200) getGooglePlaces.parsePlaces(DataHolder.location, pagination);
             else {
                 hidePDialog();
                 Toast.makeText(context, "No more Groceries can be Loaded!", Toast.LENGTH_LONG).show();
@@ -153,6 +151,8 @@ public class GroceryListActivity extends AppCompatActivity {
     private Handler updateDataListView = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
+            dismissDialog.sendMessage(new Message());
+            groceryList.clear();
             groceryList.addAll(getGooglePlaces.returnPlaceList());
             listRecyclerAdapter.notifyDataSetChanged();
             DataHolder.groceryList = groceryList;
@@ -161,6 +161,23 @@ public class GroceryListActivity extends AppCompatActivity {
         }
     });
 
+    private Handler dismissDialog = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            hidePDialog();
+            if (getGooglePlaces.returnPlaceList().isEmpty())
+                Snackbar.make(findViewById(R.id.grocery_main_layout), "Could not load nearby groceries for now. Sorry!",
+                        Snackbar.LENGTH_LONG)
+                        .setAction("TRY AGAIN", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                showpDialog();
+                                getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+                            }
+                        }).show();
+            return false;
+        }
+    });
 
     @Override
     public void onDestroy() {
@@ -173,12 +190,23 @@ public class GroceryListActivity extends AppCompatActivity {
             pDialog.dismiss();
     }
 
+    private void showpDialog() {
+        if (pDialog != null && !pDialog.isShowing())
+            pDialog.show();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.shop_menu, menu);
         final View menuCart = menu.findItem(R.id.action_cart).getActionView();
         cartCount = (TextView) menuCart.findViewById(R.id.cart_count);
-        DataHolder.userDatabaseReference.child(GROCERY_CART).getRef().addValueEventListener(new ValueEventListener() {
+        if (DataHolder.userDatabaseReference == null) {
+            Toast.makeText(this, "Please login to App", Toast.LENGTH_SHORT).show();
+            Intent loginIntent = new Intent(GroceryListActivity.this, LoginActivity.class);
+            startActivity(loginIntent);
+            finish();
+        }
+        else DataHolder.userDatabaseReference.child(GROCERY_CART).getRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer count = (int) dataSnapshot.getChildrenCount();
@@ -200,7 +228,21 @@ public class GroceryListActivity extends AppCompatActivity {
                 startActivity(groceryShoppingCartIntent);
             }
         });
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        //SearchView searchView = (SearchView) findViewById(R.id.search_by);
+        // Assumes current activity is the searchable activity
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(true); // Do not iconify the widget; expand it by default
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(this);
         return true;
+    }
+
+    @Override
+    public boolean onSearchRequested() {
+        return super.onSearchRequested();
     }
 
     @Override
@@ -209,9 +251,25 @@ public class GroceryListActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-        if (id == R.id.action_tracking) {
-            startActivity(new Intent(GroceryListActivity.this, TrackingActivity.class));
-        }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            listRecyclerAdapter.getFilter().filter(query);
+        }
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        listRecyclerAdapter.getFilter().filter(newText);
+        return false;
     }
 }
