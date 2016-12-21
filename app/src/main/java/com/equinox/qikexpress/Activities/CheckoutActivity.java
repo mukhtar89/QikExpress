@@ -1,5 +1,6 @@
 package com.equinox.qikexpress.Activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.equinox.qikexpress.Enums.OrderStatus.INCOMING;
 import static com.equinox.qikexpress.Enums.QikList.GROCERY;
@@ -67,7 +69,8 @@ public class CheckoutActivity extends AppCompatActivity {
     private Hashtable<String,Order> tempOrderTable = new Hashtable<>();
     private Hashtable<String,Integer> placeItemCount = new Hashtable<>();
     private GetPlaceDetails getPlaceDetails;
-    private Context context;
+    private AtomicInteger countItemsOrdered;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +79,13 @@ public class CheckoutActivity extends AppCompatActivity {
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        context = this;
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Generating your orders");
+        progressDialog.setCancelable(false);
+        progressDialog.setIndeterminate(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+
         getPlaceDetails = new GetPlaceDetails(null, addressFetchHandler);
 
         checkoutListView = (ListView) findViewById(R.id.checkout_list_items);
@@ -137,6 +146,9 @@ public class CheckoutActivity extends AppCompatActivity {
                             if (!placeItemCount.containsKey(item.getPlaceId())) placeItemCount.put(item.getPlaceId(), 1);
                             else placeItemCount.put(item.getPlaceId(), placeItemCount.get(item.getPlaceId())+1);
                         }
+                        progressDialog.setMax(checkoutItemsList.size());
+                        progressDialog.show();
+                        countItemsOrdered = new AtomicInteger(0);
                         for (String placeId : placeList) {
                             Message message = new Message();
                             message.obj = placeId;
@@ -156,7 +168,6 @@ public class CheckoutActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(DatabaseError databaseError) {     }
                 });
-                startActivity(new Intent(CheckoutActivity.this, TrackingActivity.class));
             }
         });
     }
@@ -214,7 +225,12 @@ public class CheckoutActivity extends AppCompatActivity {
                             public void onCancelled(DatabaseError databaseError) {     }
                         });
                     }*/
-
+                    progressDialog.setProgress(countItemsOrdered.get()+1);
+                    if (countItemsOrdered.incrementAndGet() == checkoutItemsList.size()) {
+                        progressDialog.dismiss();
+                        startActivity(new Intent(CheckoutActivity.this, TrackingActivity.class));
+                        finish();
+                    }
                 }
             }
             return false;

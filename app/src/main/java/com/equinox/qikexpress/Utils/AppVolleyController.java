@@ -2,9 +2,12 @@ package com.equinox.qikexpress.Utils;
 
 import android.app.Application;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
@@ -35,6 +38,7 @@ public class AppVolleyController extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        //TypefaceUtil.overrideFont(getApplicationContext(), "SERIF", "andika_new_basic_R.ttf");
         mInstance = this;
     }
 
@@ -61,11 +65,13 @@ public class AppVolleyController extends Application {
     public <T> void addToRequestQueue(Request<T> req, String tag) {
         // set the default tag if tag is empty
         req.setTag(TextUtils.isEmpty(tag) ? TAG : tag);
+        setRequestRetryPolicy(req);
         getRequestQueue().add(req);
     }
 
     public <T> void addToRequestQueue(Request<T> req) {
         req.setTag(TAG);
+        setRequestRetryPolicy(req);
         getRequestQueue().add(req);
     }
 
@@ -74,4 +80,21 @@ public class AppVolleyController extends Application {
             mRequestQueue.cancelAll(tag);
         }
     }
+    private <T> void setRequestRetryPolicy(final Request<T> request) {
+        request.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 60000;
+            }
+            @Override
+            public int getCurrentRetryCount() {
+                return 60000;
+            }
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+                Log.e(TAG, "Retry Error! Timedout...  " + request.getUrl());
+            }
+        });
+    }
+
 }

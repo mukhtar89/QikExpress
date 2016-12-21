@@ -7,32 +7,25 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.baoyachi.stepview.HorizontalStepView;
-import com.baoyachi.stepview.VerticalStepView;
 import com.baoyachi.stepview.bean.StepBean;
+import com.equinox.qikexpress.Adapters.OrderPagerAdapter;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Order;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Services.OrderService;
 import com.equinox.qikexpress.Utils.AppVolleyController;
-import com.equinox.qikexpress.Utils.GetOrders;
 import com.equinox.qikexpress.Utils.MapUtils.DistanceRequest;
-import com.equinox.qikexpress.Utils.StringManipulation;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -45,13 +38,13 @@ import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class TrackingActivity extends BaseOrderActivity {
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private OrderPagerAdapter orderPagerAdapter;
     private ViewPager mViewPager;
     private TabLayout tabLayout;
     private HorizontalStepView headerStepView;
     List<StepBean> stepsBeanList = new ArrayList<>();
-    private static Hashtable<String,Order> orderTrackingList = new Hashtable<>();
-    private static List<String> orderIdList = new ArrayList<>();
+    public static Hashtable<String,Order> orderTrackingList = new Hashtable<>();
+    public static List<String> orderIdList = new ArrayList<>();
     private ProgressDialog pDialog;
     private static TextView orderId;
     private static TextView distText;
@@ -67,9 +60,9 @@ public class TrackingActivity extends BaseOrderActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        orderPagerAdapter = new OrderPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setAdapter(orderPagerAdapter);
 
         orderId = (TextView) findViewById(R.id.orderId);
         distText = (TextView) findViewById(R.id.dist);
@@ -95,21 +88,26 @@ public class TrackingActivity extends BaseOrderActivity {
                 .setStepsViewIndicatorCompleteIcon(ContextCompat.getDrawable(this, R.drawable.complted))
                 .setStepsViewIndicatorDefaultIcon(ContextCompat.getDrawable(this, R.drawable.default_icon))
                 .setStepsViewIndicatorAttentionIcon(ContextCompat.getDrawable(this, R.drawable.attention));
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
+            public void onTabSelected(final TabLayout.Tab tab) {
                 updateHeaderDetail(orderTrackingList.get(orderIdList.get(tab.getPosition())));
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent deliveryIntent = new Intent(TrackingActivity.this ,DeliveryTrackingActivity.class);
+                        deliveryIntent.putExtra(ORDER_ID, orderIdList.get(tab.getPosition()));
+                        startActivity(deliveryIntent);
+                    }
+                });
             }
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                //updateHeaderDetail(orderTrackingList.get(orderIdList.get(0)));
-            }
+            public void onTabUnselected(TabLayout.Tab tab) {}
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                //updateHeaderDetail(orderTrackingList.get(orderIdList.get(tab.getPosition())));
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
 
         pDialog = new ProgressDialog(this);
@@ -152,22 +150,27 @@ public class TrackingActivity extends BaseOrderActivity {
     private Handler orderListHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            synchronized (DataHolder.lock) {
-                if(pDialog != null) pDialog.dismiss();
+            try {
+                if (pDialog != null) pDialog.dismiss();
                 orderIdList.clear();
                 orderTrackingList.clear();
-                orderTrackingList.putAll(DataHolder.orderList);
+                for (Order tempOrder : DataHolder.orderList.values())
+                    if (tempOrder.isVerified())
+                        orderTrackingList.put(tempOrder.getId(), tempOrder);
+                //orderTrackingList.putAll(DataHolder.orderList);
                 orderIdList.addAll(orderTrackingList.keySet());
                 if (orderTrackingList.isEmpty()) {
                     Toast.makeText(TrackingActivity.this, "No Orders found to be tracked!", Toast.LENGTH_SHORT).show();
                     finish();
                     return false;
-                } else if (mSectionsPagerAdapter != null){
+                } else if (orderPagerAdapter != null) {
                     updateHeaderDetail(orderTrackingList.get(orderIdList.get(0)));
-                    mSectionsPagerAdapter.notifyDataSetChanged();
+                    orderPagerAdapter.notifyDataSetChanged();
                     if (orderIdList.size() > 1) tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
                     else tabLayout.setTabMode(TabLayout.MODE_FIXED);
                 }
+            } catch (NullPointerException e){
+                orderListHandler.sendMessage(new Message());
             }
             return false;
         }
@@ -180,13 +183,13 @@ public class TrackingActivity extends BaseOrderActivity {
         else profileImage.setImageUrl(order.getShop().getIconURL(), DataHolder.getInstance().getImageLoader());
         switch (order.getOrderStatus()) {
             case INCOMING:
+            case PROCESSING:
                 stepsBeanList.get(0).setState(1);
                 stepsBeanList.get(1).setState(0);
                 stepsBeanList.get(2).setState(-1);
                 stepsBeanList.get(3).setState(-1);
                 headerStepView.setStepViewTexts(stepsBeanList);
                 break;
-            case PROCESSING:
             case COMPLETED:
                 stepsBeanList.get(0).setState(1);
                 stepsBeanList.get(1).setState(1);
@@ -253,121 +256,5 @@ public class TrackingActivity extends BaseOrderActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public static PlaceholderFragment newInstance(int position) {
-            Bundle args = new Bundle();
-            args.putInt("POSITION", position);
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_tracking, container, false);
-            VerticalStepView trackerView = (VerticalStepView) rootView.findViewById(R.id.tracking_vertical_stepview);
-            final Order currentOrder = orderTrackingList.get(orderIdList.get(getArguments().getInt("POSITION")));
-            List<String> stepsBeanListVertical = new ArrayList<>();
-            String stepBean0 = "Your order has been placed at " + currentOrder.getShop().getName()
-                    + " at " + StringManipulation.getFormattedTime(currentOrder.getTimestamp());
-            String stepBean1 = "Your order has been assigned to one of the employees. Please wait till "
-                    + StringManipulation.getFormattedTime(currentOrder.getDeadline());
-            String stepBean2, stepBean3, stepBean4, stepBean5;
-            if (currentOrder.getDriver() != null) {
-                stepBean2 = "Your order is processed. Waiting for " + currentOrder.getDriver().getName() + " to reach the store";
-                stepBean3 = "Your order is picked up by " + currentOrder.getDriver().getName();
-                stepBean4 = "Your order is enroute to your Address at ";
-                stepBean5 = "Your order is delivered to your place. Enjoy!";
-            } else {
-                stepBean2 = "Your order is processed. Driver not yet assigned";
-                stepBean3 = "Your order is to be picked up by driver assigned";
-                stepBean4 = "Your order will be enroute soon to your Address at ";
-                stepBean5 = "Your order will soon be delivered to your place. Please wait!";
-            }
-            stepBean3 += " from " + currentOrder.getShop().getAddress().getFullAddress();
-            stepBean4 += DataHolder.currentUser.getPermAddress().getFullAddress();
-            stepsBeanListVertical.add(stepBean0);
-            stepsBeanListVertical.add(stepBean1);
-            stepsBeanListVertical.add(stepBean2);
-            stepsBeanListVertical.add(stepBean3);
-            stepsBeanListVertical.add(stepBean4);
-            stepsBeanListVertical.add(stepBean5);
-            trackerView.setTextSize(15);
-            trackerView
-                    .reverseDraw(false)//default is true
-                    .setStepViewTexts(stepsBeanListVertical)//总步骤
-                    .setLinePaddingProportion(1.30f)//设置indicator线与线间距的比例系数
-                    .setStepsViewIndicatorCompletedLineColor(ContextCompat.getColor(getActivity(), android.R.color.holo_green_dark))//设置StepsViewIndicator完成线的颜色
-                    .setStepsViewIndicatorUnCompletedLineColor(ContextCompat.getColor(getActivity(), android.R.color.holo_red_light))//设置StepsViewIndicator未完成线的颜色
-                    .setStepViewComplectedTextColor(ContextCompat.getColor(getActivity(), android.R.color.holo_green_dark))//设置StepsView text完成线的颜色
-                    .setStepViewUnComplectedTextColor(ContextCompat.getColor(getActivity(), android.R.color.holo_red_light))//设置StepsView text未完成线的颜色
-                    .setStepsViewIndicatorCompleteIcon(ContextCompat.getDrawable(getActivity(), R.drawable.complted))//设置StepsViewIndicator CompleteIcon
-                    .setStepsViewIndicatorDefaultIcon(ContextCompat.getDrawable(getActivity(), R.drawable.default_icon))//设置StepsViewIndicator DefaultIcon
-                    .setStepsViewIndicatorAttentionIcon(ContextCompat.getDrawable(getActivity(), R.drawable.ic_notifications_black_48dp));//设置StepsViewIndicator AttentionIcon
-            switch (currentOrder.getOrderStatus()) {
-                case INCOMING:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size() - 5);
-                    break;
-                case PROCESSING:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size() - 4);
-                    break;
-                case COMPLETED:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size() - 3);
-                    break;
-                case PICKED_UP:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size() - 2);
-                    break;
-                case ENROUTE:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size() - 1);
-                    break;
-                case DELIVERED:
-                    trackerView.setStepsViewIndicatorComplectingPosition(stepsBeanListVertical.size());
-                    break;
-            }
-            FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent deliveryIntent = new Intent(getContext(),DeliveryTrackingActivity.class);
-                    deliveryIntent.putExtra(ORDER_ID, currentOrder.getId());
-                    getActivity().startActivity(deliveryIntent);
-                }
-            });
-            return rootView;
-        }
-    }
-
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
-
-        SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return PlaceholderFragment.newInstance(position);
-        }
-
-        @Override
-        public int getCount() {
-            return orderTrackingList.size();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return orderTrackingList.get(orderIdList.get(position)).getShop().getName();
-        }
-
-        @Override
-        public int getItemPosition(Object object) {
-            return POSITION_NONE;
-        }
     }
 }

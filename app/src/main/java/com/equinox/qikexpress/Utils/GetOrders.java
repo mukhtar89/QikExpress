@@ -16,7 +16,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,13 +25,16 @@ import static com.equinox.qikexpress.Enums.ChildState.ADDED;
 import static com.equinox.qikexpress.Enums.ChildState.CHANGED;
 import static com.equinox.qikexpress.Enums.ChildState.REMOVED;
 import static com.equinox.qikexpress.Models.Constants.BUSINESS;
+import static com.equinox.qikexpress.Models.Constants.BUSINESS_EMPLOYEE;
 import static com.equinox.qikexpress.Models.Constants.CONSUMER;
 import static com.equinox.qikexpress.Models.Constants.DEADLINE;
+import static com.equinox.qikexpress.Models.Constants.DRIVER;
 import static com.equinox.qikexpress.Models.Constants.EXCHANGE_ITEM;
 import static com.equinox.qikexpress.Models.Constants.ORDERS;
 import static com.equinox.qikexpress.Models.Constants.ORDER_ITEMS;
 import static com.equinox.qikexpress.Models.Constants.ORDER_PAYLOAD;
 import static com.equinox.qikexpress.Models.Constants.ORDER_STATUS;
+import static com.equinox.qikexpress.Models.Constants.STATUS_TIMESTAMP;
 import static com.equinox.qikexpress.Models.Constants.TIMESTAMP;
 import static com.equinox.qikexpress.Models.DataHolder.orderList;
 import static com.equinox.qikexpress.Models.DataHolder.ordersReference;
@@ -43,11 +47,11 @@ import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 public class GetOrders {
 
     private static Handler orderHandler;
-    private static GenerateNotification generateNotification;
+    private static OrderNotification orderNotification;
 
     public static void updateMeta(Handler handler, Context context) {
         orderHandler = handler;
-        generateNotification = new GenerateNotification(context);
+        orderNotification = new OrderNotification(context);
     }
 
     public static synchronized void getOrders() {
@@ -70,7 +74,10 @@ public class GetOrders {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                orderList.remove(dataSnapshot.getKey());
+                Order tempOrder = orderList.get(dataSnapshot.getKey());
+                DataHolder.database.getReference(BUSINESS).child(tempOrder.getShop().getBasePath()).child(tempOrder.getShop().getPlaceId())
+                        .child(ORDERS).child(dataSnapshot.getKey()).removeValue();
+                orderList.remove(tempOrder.getId());
             }
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
@@ -92,20 +99,16 @@ public class GetOrders {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 getOrderLists(dataSnapshot, tempOrder.getId(), ADDED);
-                /*generateNotification.showNotification(ADDED, orderList.get(dataSnapshot.getKey()),
-                        orderList.get(dataSnapshot.getKey()).getOrderStatus());*/
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 getOrderLists(dataSnapshot, tempOrder.getId(), CHANGED);
-                //orderHandler.sendMessage(new Message());
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 getOrderLists(dataSnapshot, tempOrder.getId(), REMOVED);
-                //orderHandler.sendMessage(new Message());
             }
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
@@ -122,7 +125,13 @@ public class GetOrders {
                     tempOrder.setFrom(new User().fromMap((Map<String, Object>) dataSnapshot.getValue()));
                     break;
                 case DEADLINE:
+                    Long oldDeadline = null;
+                    if (tempOrder.getDeadline() != null) oldDeadline = tempOrder.getDeadline();
                     tempOrder.setDeadline((Long) dataSnapshot.getValue());
+                    if (state.equals(CHANGED)) {
+                        if (orderHandler != null) orderHandler.sendMessage(new Message());
+                        orderNotification.showNotification(DEADLINE, tempOrder, oldDeadline);
+                    }
                     break;
                 case EXCHANGE_ITEM:
                     tempOrder.setExchange((Boolean) dataSnapshot.getValue());
@@ -140,16 +149,70 @@ public class GetOrders {
                     else tempOrder.setWeight((float) (double) dataSnapshot.getValue());
                     break;
                 case ORDER_STATUS:
+                    OrderStatus oldStatus = null;
+                    if (tempOrder.getOrderStatus() != null) oldStatus = tempOrder.getOrderStatus();
                     tempOrder.setOrderStatus(OrderStatus.valueOf((String) dataSnapshot.getValue()));
+                    if (state.equals(CHANGED)) {
+                        if (orderHandler != null) orderHandler.sendMessage(new Message());
+                        orderNotification.showNotification(ORDER_STATUS, tempOrder, oldStatus);
+                    }
                     break;
                 case TIMESTAMP:
                     tempOrder.setTimestamp((Long) dataSnapshot.getValue());
                     break;
-
+                case STATUS_TIMESTAMP:
+                    tempOrder.getStatusTimestamp().clear();
+                    Iterator iteratorStatusTimestamp = ((Map<String, Object>) dataSnapshot.getValue()).entrySet().iterator();
+                    while(iteratorStatusTimestamp.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iteratorStatusTimestamp.next();
+                        tempOrder.getStatusTimestamp().put(OrderStatus.valueOf((String) pair.getKey()), (Long) pair.getValue());
+                    }
+                    break;
+                case DRIVER:
+                    User oldDriver = null;
+                    if (tempOrder.getDriver() != null) oldDriver = tempOrder.getDriver();
+                    switch (state) {
+                        case ADDED:
+                            tempOrder.setDriver(new User().fromMap((Map<String, Object>) dataSnapshot.getValue()));
+                            orderNotification.showNotification(DRIVER, tempOrder, null);
+                            break;
+                        case CHANGED:
+                            tempOrder.setDriver(new User().fromMap((Map<String, Object>) dataSnapshot.getValue()));
+                            orderNotification.showNotification(DRIVER, tempOrder, oldDriver.getName());
+                            break;
+                        case REMOVED:
+                            tempOrder.setDriver(null);
+                            orderNotification.showNotification(DRIVER, tempOrder, oldDriver);
+                            break;
+                    }
+                    if (orderHandler != null) orderHandler.sendMessage(new Message());
+                    break;
+                case BUSINESS_EMPLOYEE:
+                    User oldEmployee = null;
+                    if (tempOrder.getEmployee() != null) oldEmployee = tempOrder.getEmployee();
+                    switch (state) {
+                        case ADDED:
+                            tempOrder.setEmployee(new User().fromMap((Map<String, Object>) dataSnapshot.getValue()));
+                            orderNotification.showNotification(BUSINESS_EMPLOYEE, tempOrder, null);
+                            break;
+                        case CHANGED:
+                            tempOrder.setEmployee(new User().fromMap((Map<String, Object>) dataSnapshot.getValue()));
+                            orderNotification.showNotification(BUSINESS_EMPLOYEE, tempOrder, oldEmployee.getName());
+                            break;
+                        case REMOVED:
+                            tempOrder.setEmployee(null);
+                            orderNotification.showNotification(BUSINESS_EMPLOYEE, tempOrder, oldEmployee);
+                            break;
+                    }
+                    if (orderHandler != null) orderHandler.sendMessage(new Message());
+                    break;
             }
             orderList.put(orderId, tempOrder);
-            if (state.equals(ADDED) && dataSnapshot.getKey().equals(TIMESTAMP) && orderHandler != null)
-                orderHandler.sendMessage(new Message());
+            if (state.equals(ADDED) && tempOrder.isVerified()) {
+                if (orderHandler != null) orderHandler.sendMessage(new Message());
+                if (!AppVolleyController.isActivityVisible())
+                    orderNotification.showNotification(TIMESTAMP, tempOrder, null);
+            }
         }  catch (Exception e) {
             e.getMessage();
         }

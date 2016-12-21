@@ -33,7 +33,6 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:4.17.0'
     compile 'com.github.baoyachi:StepView:1.9'
     compile 'com.google.code.gson:gson:2.8.0'
-    compile 'junit:junit:4.12'
 }
 
 apply plugin: 'com.google.gms.google-services'

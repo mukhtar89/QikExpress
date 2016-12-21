@@ -95,7 +95,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
                                     dialog.dismiss();
                                 }
                             }).show();
-                }
+                } else startActivity(new Intent(GroceryShoppingCartActivity.this, CheckoutActivity.class));
 
             }
         });

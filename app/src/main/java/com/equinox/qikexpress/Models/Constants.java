@@ -47,6 +47,7 @@ public interface Constants {
     String CURRENT_LOCATION_LNG = "currentLocationLng";
     String BUSINESS_OUTLET = "businessOutlet";
     String BUSINESS_OWNER = "businessOwner";
+    String BUSINESS_EMPLOYEE = "businessEmployee";
     String BUSINESS = "business";
     String NAME = "name";
     String PROFILE_IMAGE = "profileImage";
@@ -56,4 +57,5 @@ public interface Constants {
     String ADDRESS_ELEMENTS = "addressElements";
     String SHOP = "shop";
     String USER ="user";
+    String STATUS_TIMESTAMP = "statusTimestamp";
 }

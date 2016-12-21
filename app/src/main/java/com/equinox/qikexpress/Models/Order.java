@@ -6,9 +6,11 @@ import com.google.firebase.database.Exclude;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.equinox.qikexpress.Models.Constants.BUSINESS_EMPLOYEE;
 import static com.equinox.qikexpress.Models.Constants.CONSUMER;
 import static com.equinox.qikexpress.Models.Constants.DEADLINE;
 import static com.equinox.qikexpress.Models.Constants.DRIVER;
@@ -18,6 +20,7 @@ import static com.equinox.qikexpress.Models.Constants.ORDER_ITEMS;
 import static com.equinox.qikexpress.Models.Constants.ORDER_PAYLOAD;
 import static com.equinox.qikexpress.Models.Constants.ORDER_STATUS;
 import static com.equinox.qikexpress.Models.Constants.SHOP;
+import static com.equinox.qikexpress.Models.Constants.STATUS_TIMESTAMP;
 import static com.equinox.qikexpress.Models.Constants.TIMESTAMP;
 
 /**
@@ -28,12 +31,18 @@ public class Order {
 
     private String id;
     private OrderStatus orderStatus;
-    private User from, driver;
+    private User from, driver, employee;
     private Place shop = new Place();
     private List<Item> items = new ArrayList<>();
     private Long timestamp, deadline;
     private Boolean exchange;
     private Float weight;
+    private HashMap<OrderStatus,Long> statusTimestamp = new HashMap<>();
+
+    public boolean isVerified() {
+        return !(orderStatus == null || from == null || deadline == null || exchange == null
+                || items.isEmpty() || timestamp == null || weight == null);
+    }
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -41,6 +50,7 @@ public class Order {
         result.put(ORDER_STATUS, orderStatus.toString());
         result.put(CONSUMER, from.toMap());
         if (driver != null) result.put(DRIVER, driver.toMap());
+        if (employee != null) result.put(BUSINESS_EMPLOYEE, employee.toMap());
         result.put(TIMESTAMP, timestamp);
         result.put(DEADLINE, deadline);
         result.put(EXCHANGE_ITEM, exchange);
@@ -49,6 +59,7 @@ public class Order {
         for (Integer i=0; i<items.size(); i++)
             listItems.put(i.toString(),items.get(i).toMapCheckout());
         result.put(ORDER_ITEMS, listItems);
+        result.put(STATUS_TIMESTAMP, statusTimestamp);
         return result;
     }
 
@@ -62,6 +73,8 @@ public class Order {
         from = DataHolder.currentUser;
         if (entry.containsKey(DRIVER))
             driver = new User().fromMap((HashMap<String, Object>) entry.get(DRIVER));
+        if (entry.containsKey(BUSINESS_EMPLOYEE))
+            employee = new User().fromMap((HashMap<String, Object>) entry.get(BUSINESS_EMPLOYEE));
         timestamp = (Long) entry.get(TIMESTAMP);
         List<Object> iteratorItemObject = (List<Object>) entry.get(ORDER_ITEMS);
         for (Object itemObject : iteratorItemObject) {
@@ -69,6 +82,13 @@ public class Order {
             items.add(tempItem.fromMap((HashMap<String, Object>) itemObject));
         }
         deadline = (Long) entry.get(DEADLINE);
+        if (entry.containsKey(STATUS_TIMESTAMP)) {
+            Iterator iteratorStatusTimestamp = ((HashMap<String, Object>) entry.get(STATUS_TIMESTAMP)).entrySet().iterator();
+            while(iteratorStatusTimestamp.hasNext()) {
+                Map.Entry pair = (Map.Entry) iteratorStatusTimestamp.next();
+                statusTimestamp.put(OrderStatus.valueOf((String) pair.getKey()), (Long) pair.getValue());
+            }
+        }
         return this;
     }
 
@@ -142,5 +162,17 @@ public class Order {
     }
     public void setOrderStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
+    }
+    public User getEmployee() {
+        return employee;
+    }
+    public void setEmployee(User employee) {
+        this.employee = employee;
+    }
+    public HashMap<OrderStatus, Long> getStatusTimestamp() {
+        return statusTimestamp;
+    }
+    public void setStatusTimestamp(HashMap<OrderStatus, Long> statusTimestamp) {
+        this.statusTimestamp = statusTimestamp;
     }
 }

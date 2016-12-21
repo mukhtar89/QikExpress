@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +38,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.equinox.qikexpress.Enums.QikList.GROCERY;
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
+import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class GroceryListActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -48,7 +53,8 @@ public class GroceryListActivity extends AppCompatActivity implements SearchView
     private ProgressDialog pDialog;
     private GroceryListRecyclerAdapter listRecyclerAdapter;
     private LinearLayout sortBy, filterBy, trackOrders;
-    private TextView cartCount;
+    private TextView cartCount, myAddress, placeTypeName;
+    private ImageView placeIcon;
     private Context context;
 
     @Override
@@ -57,14 +63,29 @@ public class GroceryListActivity extends AppCompatActivity implements SearchView
         setContentView(R.layout.activity_grocery_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setCustomView(R.layout.actionbar_grocery_layout);
         context = this;
 
-        if (DataHolder.location == null) {
+        if (currentUser == null) {
+            Toast.makeText(this, "Please login to App", Toast.LENGTH_SHORT).show();
+            Intent loginIntent = new Intent(GroceryListActivity.this, LoginActivity.class);
+            startActivity(loginIntent);
+            finish();
+        }
+        else if (DataHolder.location == null) {
             Toast.makeText(this, "Please turn on your Location!", Toast.LENGTH_LONG).show();
             finish();
         } else {
+            View actionBarView = getSupportActionBar().getCustomView();
+            myAddress = (TextView) actionBarView.findViewById(R.id.location_address);
+            if (currentUser.getCurrentAddress() == null) myAddress.setText("");
+            else myAddress.setText("near " + currentUser.getCurrentAddress().getFullAddress());
+            placeTypeName = (TextView) actionBarView.findViewById(R.id.place_type_name);
+            placeTypeName.setText("Groceries");
+            placeIcon = (ImageView) actionBarView.findViewById(R.id.place_type_icon);
+            placeIcon.setImageResource(GROCERY.getIcon());
+
             pDialog = new ProgressDialog(this);
             // Showing progress dialog before making http request
             pDialog.setMessage("Loading Groceries Nearby...");
@@ -72,7 +93,7 @@ public class GroceryListActivity extends AppCompatActivity implements SearchView
             pDialog.show();
 
             pagination = 1;
-            getGooglePlaces = new GetGooglePlaces<>(QikList.GROCERY, new Handler[]{loopUntilLoad, updateDataListView, dismissDialog});
+            getGooglePlaces = new GetGooglePlaces<>(GROCERY, new Handler[]{loopUntilLoad, updateDataListView, dismissDialog});
             getGooglePlaces.parsePlaces(DataHolder.location, pagination);
 
             layoutManager = new HybridLayoutManager(this);
