@@ -5,9 +5,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GroceryItem;
@@ -17,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,12 +48,14 @@ public class GroceryItemDBHandler {
 
     public void getCategoryMapping() {
         String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/grocerycategoryoperations/v1/groceryCategory/all?detail=false";
-        JsonObjectRequest categoriesReq = new JsonObjectRequest(baseURL, null, new Response.Listener<JSONObject>() {
+        CacheRequest categoriesReq = new CacheRequest(0, baseURL, new Response.Listener<NetworkResponse>() {
             @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, response.toString());
-                groceryCategoriesMapping = new HashMap<>();
+            public void onResponse(NetworkResponse responseNetwork) {
                 try {
+                    String jsonString = new String(responseNetwork.data, HttpHeaderParser.parseCharset(responseNetwork.headers));
+                    JSONObject response = new JSONObject(jsonString);
+                    Log.d(TAG, response.toString());
+                    groceryCategoriesMapping = new HashMap<>();
                     if (response.has("items")) {
                         JSONArray categoryArray = response.getJSONArray("items");
                         for (int i = 0; i < categoryArray.length(); i++) {
@@ -59,7 +64,7 @@ public class GroceryItemDBHandler {
                                     categoryMap.has("categoryImageURL") ? categoryMap.getString("categoryImageURL") : null);
                         }
                     }
-                } catch (JSONException e) {
+                } catch (JSONException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
                 Message message = new Message();
@@ -83,11 +88,13 @@ public class GroceryItemDBHandler {
             baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryitemsoperations/v1/groceryItems/all";
             listDataChild.clear();
         }
-        final JsonObjectRequest groceryItemsReq = new JsonObjectRequest(baseURL, null, new Response.Listener<JSONObject>() {
+        CacheRequest groceryItemsReq = new CacheRequest(0, baseURL, new Response.Listener<NetworkResponse>() {
             @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, response.toString());
+            public void onResponse(NetworkResponse responseNetwork) {
                 try {
+                    String jsonString = new String(responseNetwork.data, HttpHeaderParser.parseCharset(responseNetwork.headers));
+                    JSONObject response = new JSONObject(jsonString);
+                    Log.d(TAG, response.toString());
                     if (response.has("items")) {
                         JSONArray categoryArray = response.getJSONArray("items");
                         hidePDialog();
@@ -143,7 +150,7 @@ public class GroceryItemDBHandler {
                                 listDataChild.get(categories.get(0)).add(categories.get(1));
                         }
                     }
-                } catch (JSONException e) {
+                } catch (JSONException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
                 Message message = new Message();

@@ -1,18 +1,17 @@
 package com.equinox.qikexpress.ViewHolders;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.equinox.qikexpress.Activities.GroceryItemDetailActivity;
+import com.equinox.qikexpress.Activities.GroceryItemOverviewActivity;
 import com.equinox.qikexpress.Activities.GroceryItemsMainActivity;
-import com.equinox.qikexpress.Models.DataHolder;
+import com.equinox.qikexpress.Fragments.GroceryItemDetailFragment;
 import com.equinox.qikexpress.R;
 
 /**
@@ -54,8 +53,11 @@ public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder imple
     @Override
     public void onClick(View v) {
         int itemPosition = getLayoutPosition();
-        Intent itemIntent = new Intent(activity, GroceryItemDetailActivity.class);
-        itemIntent.putExtra("ITEM_POS_CAT2", itemPosition);
-        activity.startActivity(itemIntent);
+        FragmentManager fragmentManager;
+        if (activity.getComponentName().getClassName().equals("com.equinox.qikexpress.Activities.GroceryItemOverviewActivity"))
+            fragmentManager = ((GroceryItemOverviewActivity) activity).getSupportFragmentManager();
+        else fragmentManager = ((GroceryItemsMainActivity) activity).getSupportFragmentManager();
+        GroceryItemDetailFragment groceryItemDetailFragment = GroceryItemDetailFragment.newInstance("ITEM_POS_CAT2", itemPosition);
+        groceryItemDetailFragment.show(fragmentManager, "GroceryItemDetailFragment");
     }
 }

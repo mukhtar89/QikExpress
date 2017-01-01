@@ -10,6 +10,7 @@ import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LAT;
 import static com.equinox.qikexpress.Models.Constants.CURRENT_LOCATION_LNG;
 import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LAT;
 import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LNG;
+import static com.equinox.qikexpress.Models.Constants.SELECTED_ADDRESS;
 
 /**
  * Created by mukht on 11/16/2016.
@@ -18,8 +19,37 @@ import static com.equinox.qikexpress.Models.Constants.PERM_LOCATION_LNG;
 public class User {
 
     private String id, name, email, photoURL, phone, localCurrency, localCurrencySymbol;
-    private LatLng permLocation, currentLocation;
-    private GeoAddress permAddress, currentAddress;
+    private LatLng currentLocation;
+    private GeoAddress currentAddress;
+    private UserPlace selectedAddress;
+
+    @Exclude
+    public HashMap<String,Object> toMap() {
+        HashMap<String,Object> userMap = new HashMap<>();
+        userMap.put("id",id);
+        userMap.put("name",name);
+        userMap.put("email",email);
+        userMap.put("photoURL",photoURL);
+        userMap.put(CURRENT_LOCATION_LAT, currentLocation.latitude);
+        userMap.put(CURRENT_LOCATION_LNG, currentLocation.longitude);
+        userMap.put("currentAddress", currentAddress.toMap());
+        if (selectedAddress != null)
+            userMap.put(SELECTED_ADDRESS, selectedAddress.toMap());
+        return userMap;
+    }
+
+    @Exclude
+    public User fromMap(Map<String,Object> userMap) {
+        id = (String) userMap.get("id");
+        name = (String) userMap.get("name");
+        email = (String) userMap.get("email");
+        photoURL = (String) userMap.get("photoURL");
+        currentLocation = new LatLng((Double) userMap.get(CURRENT_LOCATION_LAT), (Double) userMap.get(CURRENT_LOCATION_LNG));
+        currentAddress = new GeoAddress().fromMap((HashMap<String,Object>)userMap.get("currentAddress"));
+        if (userMap.containsKey(SELECTED_ADDRESS))
+            selectedAddress = new UserPlace().fromMap((Map<String,Object>) userMap.get(SELECTED_ADDRESS));
+        return this;
+    }
 
     public String getId() {
         return id;
@@ -51,18 +81,6 @@ public class User {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    public LatLng getPermLocation() {
-        return permLocation;
-    }
-    public void setPermLocation(LatLng permLocation) {
-        this.permLocation = permLocation;
-    }
-    public GeoAddress getPermAddress() {
-        return permAddress;
-    }
-    public void setPermAddress(GeoAddress permAddress) {
-        this.permAddress = permAddress;
-    }
     public String getLocalCurrency() {
         return localCurrency;
     }
@@ -87,37 +105,11 @@ public class User {
     public void setCurrentLocation(LatLng currentLocation) {
         this.currentLocation = currentLocation;
     }
-
-    @Exclude
-    public HashMap<String,Object> toMap() {
-        HashMap<String,Object> userMap = new HashMap<>();
-        userMap.put("id",id);
-        userMap.put("name",name);
-        userMap.put("email",email);
-        userMap.put("photoURL",photoURL);
-        if (permLocation != null) {
-            userMap.put(PERM_LOCATION_LAT, permLocation.latitude);
-            userMap.put(PERM_LOCATION_LNG, permLocation.longitude);
-        }
-        userMap.put(CURRENT_LOCATION_LAT, currentLocation.latitude);
-        userMap.put(CURRENT_LOCATION_LNG, currentLocation.longitude);
-        if (permAddress != null) userMap.put("permAddress", permAddress.toMap());
-        userMap.put("currentAddress", currentAddress.toMap());
-        return userMap;
+    public UserPlace getSelectedAddress() {
+        return selectedAddress;
+    }
+    public void setSelectedAddress(UserPlace selectedAddress) {
+        this.selectedAddress = selectedAddress;
     }
 
-    @Exclude
-    public User fromMap(Map<String,Object> userMap) {
-        id = (String) userMap.get("id");
-        name = (String) userMap.get("name");
-        email = (String) userMap.get("email");
-        photoURL = (String) userMap.get("photoURL");
-        if (userMap.containsKey("permLocation"))
-            permLocation = new LatLng((Double) userMap.get(PERM_LOCATION_LAT), (Double) userMap.get(PERM_LOCATION_LNG));
-        currentLocation = new LatLng((Double) userMap.get(CURRENT_LOCATION_LAT), (Double) userMap.get(CURRENT_LOCATION_LNG));
-        if (userMap.containsKey("permAddress"))
-            permAddress = new GeoAddress().fromMap((HashMap<String,Object>)userMap.get("permAddress"));
-        currentAddress = new GeoAddress().fromMap((HashMap<String,Object>)userMap.get("currentAddress"));
-        return this;
-    }
 }

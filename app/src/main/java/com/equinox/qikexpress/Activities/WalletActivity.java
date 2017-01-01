@@ -38,7 +38,7 @@ public class WalletActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wallet);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -86,7 +86,7 @@ public class WalletActivity extends AppCompatActivity {
     private Handler walletCurrencyHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            if (msg.arg1 == 1) {
+            if (currentUser.getLocalCurrency() != null) {
                 walletAmount.setText(currentUser.getLocalCurrency() + " " + walletAmountValue);
                 progressDialog.dismiss();
             }

@@ -38,6 +38,8 @@ public class DataHolder {
     public static Map<String,Place> placeMap = new Hashtable<>();
     public static Map<String,Grocery> groceryMap = new Hashtable<>();
     public static List<Grocery> groceryList = new ArrayList<>();
+    public static Map<String,Restaurant> restaurantMap = new Hashtable<>();
+    public static List<Restaurant> restaurantList = new ArrayList<>();
 
     public static Hashtable<String,GroceryItemCollection> currentGroceryItemCollections = new Hashtable<>();
     public static Hashtable<String,List<GroceryItemCollection>> groceryItemCollectionCat1Mapping = new Hashtable<>();
@@ -45,6 +47,7 @@ public class DataHolder {
     public static Map<String,String> categoryImageMapping = new HashMap<>();
     public static Hashtable<String,Order> orderList = new Hashtable<>();
     public static String category1, category2;
+    public static Boolean mTwoPane = false;
 
     private ImageLoader imageLoader = AppVolleyController.getInstance().getImageLoader();
     public static FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -53,6 +56,7 @@ public class DataHolder {
 
     public static Location location = null;
     public static User currentUser = null;
+    public static HashMap<String,UserPlace> userPlaceHashMap = new HashMap<>();
     public static final Boolean lock = true;
 
     public void setGroceryMap() {
@@ -61,6 +65,15 @@ public class DataHolder {
                 if (!placeMap.containsKey(groceryList.get(i).getPlaceId()))
                     placeMap.put(groceryList.get(i).getPlaceId(), groceryList.get(i));
                 groceryMap.put(groceryList.get(i).getPlaceId(), groceryList.get(i));
+            }
+        }
+    }
+    public void setRestaurantMap() {
+        synchronized (lock) {
+            for (int i = 0; i < restaurantList.size(); i++) {
+                if (!placeMap.containsKey(restaurantList.get(i).getPlaceId()))
+                    placeMap.put(restaurantList.get(i).getPlaceId(), restaurantList.get(i));
+                restaurantMap.put(restaurantList.get(i).getPlaceId(), restaurantList.get(i));
             }
         }
     }
@@ -93,29 +106,10 @@ public class DataHolder {
         });
     }
 
-    public void generateMetadata(final SharedPreferences sharedPreferences) {
+    public void generateMetadata() {
         userDatabaseReference.child(USER_METADATA).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChildren()) {
-                    SharedPreferences.Editor prefEditor = sharedPreferences.edit();
-                    Gson gsonAddress = new Gson();
-                    if (!dataSnapshot.hasChild("permAddress")) {
-                        if (currentUser.getPermAddress() == null) {
-                            currentUser.setPermAddress(currentUser.getCurrentAddress());
-                            String jsonAddress = gsonAddress.toJson(currentUser.getCurrentAddress());
-                            prefEditor.putString("permAddress", jsonAddress);
-                        }
-                    }
-                    if (!dataSnapshot.hasChild("permLocation")) {
-                        if (currentUser.getPermLocation() == null) {
-                            currentUser.setPermLocation(currentUser.getCurrentLocation());
-                            String jsonLocation = gsonAddress.toJson(currentUser.getCurrentLocation());
-                            prefEditor.putString("permLocation", jsonLocation);
-                        }
-                    }
-                    prefEditor.apply();
-                }
                 currentUser.setName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
                 currentUser.setPhotoURL(String.valueOf(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()));
                 currentUser.setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());

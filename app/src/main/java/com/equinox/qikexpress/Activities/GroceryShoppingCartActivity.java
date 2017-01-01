@@ -4,10 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -21,10 +18,8 @@ import android.widget.Toast;
 
 import com.equinox.qikexpress.Adapters.GroceryCartRecyclerAdapter;
 import com.equinox.qikexpress.Models.DataHolder;
-import com.equinox.qikexpress.Models.GroceryItem;
 import com.equinox.qikexpress.Models.GroceryItemCart;
 import com.equinox.qikexpress.R;
-import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,21 +28,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
-import static com.equinox.qikexpress.Models.Constants.ITEM_ID;
-import static com.equinox.qikexpress.Models.Constants.ITEM_IMAGE;
-import static com.equinox.qikexpress.Models.Constants.ITEM_NAME;
-import static com.equinox.qikexpress.Models.Constants.ITEM_PRICE;
-import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
-import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
-import static com.equinox.qikexpress.Models.Constants.PLACE_NAME;
 import static com.equinox.qikexpress.Models.Constants.SAVE_FOR_LATER;
-import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class GroceryShoppingCartActivity extends AppCompatActivity {
 
@@ -63,7 +48,7 @@ public class GroceryShoppingCartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_grocery_shopping_cart);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         context = this;
 

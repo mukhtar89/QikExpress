@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/content_grocery_item_detail">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorPrimary">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:padding="12dp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:text="Sample"
+                android:gravity="center_horizontal|center_vertical"
+                android:id="@+id/grocery_item_detail_title"/>
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:padding="10dp"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:id="@+id/grocery_item_image_view"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:id="@+id/grocery_item_category_chain"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/holo_green_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_brand"/>
+
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_marginRight="20dp"
+                        android:id="@+id/grocery_item_brand_image"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:textColor="@android:color/holo_orange_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_price"/>
+
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:textColor="@android:color/holo_orange_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_price_spinner" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Custom Size: "
+                        android:textColor="@android:color/holo_purple"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_custom_size"/>
+
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Select a Size"
+                        android:textColor="@android:color/holo_purple"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_custom_size_spinner" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Net Weight not recorded"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_weight"/>
+
+                    <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:ems="10"
+                        android:text="1"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:id="@+id/grocery_item_weight_loose" />
+
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Select a Weight"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_weight_spinner"/>
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Net Volume not recorded"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_vol"/>
+
+                    <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:text="1"
+                        android:ems="10"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:id="@+id/grocery_item_vol_loose" />
+
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:text="Select a Volume"
+                        android:textColor="@android:color/holo_blue_dark"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:id="@+id/grocery_item_vol_spinner"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add_cart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginTop="70dp"
+        android:layout_gravity="top|end"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/colorAccent"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/ic_add_shopping_cart_white_48dp" />
+
+
+</android.support.design.widget.CoordinatorLayout>

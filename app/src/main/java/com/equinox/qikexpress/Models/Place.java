@@ -104,11 +104,15 @@ public class Place {
 
     public void setDistanceFromCurrent(String distance) {
         if (distance.length()>4)
-            this.distanceFromCurrent = Float.parseFloat(distance.substring(0, distance.length()-3));
+            distanceFromCurrent = Float.parseFloat(distance.substring(0, distance.length()-3).replaceAll(",",""));
     }
     public void setTimeFromCurrent(String time) {
-        if (time.length()>4)
-            this.timeFromCurrent = Integer.parseInt(time.substring(0, time.length()-4).replaceAll(" ",""));
+        if (time.contains("hour") || time.contains("hours")) {
+            String hourType = time.contains("hours") ? "hours" : "hour";
+            timeFromCurrent = Integer.valueOf(time.substring(0, time.indexOf(hourType)-1)) * 60;
+            timeFromCurrent += Integer.parseInt(time.substring(time.indexOf(hourType)+hourType.length(), time.length() - 4).replaceAll(" ", ""));
+        }
+        else timeFromCurrent = Integer.parseInt(time.substring(0, time.length() - 4).replaceAll(" ", ""));
     }
     public Float getDistanceFromCurrent() {   return distanceFromCurrent;  }
     public Integer getTimeFromCurrent() { return timeFromCurrent; }

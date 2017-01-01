@@ -8,12 +8,14 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ClearCacheRequest;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.equinox.qikexpress.Enums.QikList;
 import com.equinox.qikexpress.Models.Constants;
@@ -29,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,10 +52,11 @@ public class GetGooglePlaces<T extends Place> {
     private String NORMAL = "1", SECONDARY = "2";
     private QikList placeType;
     private Handler[] placeHandlers;
-    private List<T> placeList = new ArrayList<>();
+    private List<T> placeList;
     private HashSet<String> loadedPlaces;
 
     public GetGooglePlaces(QikList placeType, Handler[] placeHandlers) {
+        placeList = new ArrayList<>();
         this.placeType = placeType;
         this.placeHandlers = placeHandlers;
         loadedPlaces = new HashSet<>();
@@ -63,14 +67,14 @@ public class GetGooglePlaces<T extends Place> {
         String baseURL = "https://maps.googleapis.com/maps/api/place/search/json?";
         String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                 + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
-        JsonObjectRequest placeReq = new JsonObjectRequest(baseURL+urlArguments, null, placesListener, placesErrorListener);
-        AppVolleyController.getInstance().addToRequestQueue(placeReq, NORMAL);
+        CacheRequest placeReqCacheRequest = new CacheRequest(0, baseURL+urlArguments, placesListener, placesErrorListener);
+        AppVolleyController.getInstance().addToRequestQueue(placeReqCacheRequest, NORMAL);
         for (String keyword : Arrays.asList(placeType.getKeyword())) {
             baseURL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
             urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                     + "&keyword=" + keyword+ "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
-            JsonObjectRequest placeReqSecondary = new JsonObjectRequest(baseURL+urlArguments, null, placesListener, placesErrorListener);
-            AppVolleyController.getInstance().addToRequestQueue(placeReqSecondary, SECONDARY);
+            CacheRequest placeReqSecCacheRequest = new CacheRequest(0, baseURL+urlArguments, placesListener, placesErrorListener);
+            AppVolleyController.getInstance().addToRequestQueue(placeReqSecCacheRequest, SECONDARY);
         }
         AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
             @Override
@@ -93,11 +97,13 @@ public class GetGooglePlaces<T extends Place> {
         });
     }
 
-    private Response.Listener<JSONObject> placesListener = new Response.Listener<JSONObject>() {
+    private Response.Listener<NetworkResponse> placesListener = new Response.Listener<NetworkResponse>() {
         @Override
-        public void onResponse(JSONObject response) {
-            Log.d(TAG, response.toString());
+        public void onResponse(NetworkResponse responseNetwork) {
             try {
+                final String jsonString = new String(responseNetwork.data, HttpHeaderParser.parseCharset(responseNetwork.headers));
+                JSONObject response = new JSONObject(jsonString);
+                Log.d(TAG, response.toString());
                 if (response.has("results")) {
                     JSONArray listObjects = response.getJSONArray("results");
                     // Parsing json
@@ -149,7 +155,7 @@ public class GetGooglePlaces<T extends Place> {
                         }
                     }
                 }
-            } catch (JSONException e) {
+            } catch (JSONException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (InstantiationException e) {
                 e.printStackTrace();

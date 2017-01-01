@@ -15,12 +15,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.equinox.qikexpress.Adapters.GroceryExpandableListAdapter;
@@ -29,6 +32,7 @@ import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.Grocery;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.AppVolleyController;
+import com.equinox.qikexpress.Utils.CacheRequest;
 import com.equinox.qikexpress.Utils.GroceryItemDBHandler;
 import com.equinox.qikexpress.Utils.StringManipulation;
 import com.google.firebase.database.DataSnapshot;
@@ -39,6 +43,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +52,7 @@ import java.util.Map;
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
 import static com.equinox.qikexpress.Models.DataHolder.categoryImageMapping;
 import static com.equinox.qikexpress.Models.DataHolder.groceryMap;
+import static com.equinox.qikexpress.Models.DataHolder.mTwoPane;
 import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 public class GroceryItemsMainActivity extends AppCompatActivity {
@@ -68,9 +74,12 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_grocery_item_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (findViewById(R.id.grocery_item_overview_container) != null) mTwoPane = true;
+        else mTwoPane = false;
 
         groceryImage = (NetworkImageView) findViewById(R.id.imgPoster);
         profileImage = (NetworkImageView) findViewById(R.id.profile_img);
@@ -125,12 +134,14 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     }
 
     public void getGroceryData() {
-        String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryoperations/v1/grocery/select?placeid=";
-        JsonObjectRequest placeReq = new JsonObjectRequest(baseURL+grocery.getPlaceId(), null, new Response.Listener<JSONObject>() {
+        String baseURL = "https://1-dot-qikexpress.appspot.com/_ah/api/groceryoperations/v1/grocery/select?placeid=" + grocery.getPlaceId();
+        CacheRequest placeReq = new CacheRequest(0, baseURL, new Response.Listener<NetworkResponse>() {
             @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, response.toString());
+            public void onResponse(NetworkResponse responseNetwork) {
                 try {
+                    String jsonString = new String(responseNetwork.data, HttpHeaderParser.parseCharset(responseNetwork.headers));
+                    JSONObject response = new JSONObject(jsonString);
+                    Log.d(TAG, response.toString());
                     if (response.has("items")) {
                         JSONArray listObjects = response.getJSONArray("items");
                         JSONObject groceryObject = listObjects.getJSONObject(0);
@@ -147,7 +158,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                         placeMap.put(grocery.getPlaceId(),
                                 placeMap.get(grocery.getPlaceId()).mergePlace(grocery));
                     }
-                } catch (JSONException e) {
+                } catch (JSONException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
                 groceryDBHeaderHandler.sendMessage(new Message());
@@ -174,10 +185,8 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 profileImage.setImageUrl(grocery.getBrandImage(), DataHolder.getInstance().getImageLoader());
             else {
                 profileImage.setVisibility(View.GONE);
-                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,TableLayout.LayoutParams.MATCH_PARENT);
-                layoutParams.setMargins(80, 50, 0, 0);
-                TableLayout tableLayout = (TableLayout) findViewById(R.id.header_detail);
-                tableLayout.setLayoutParams(layoutParams);
+                findViewById(R.id.profile_img_layout).setVisibility(View.GONE);
+                ((LinearLayout)findViewById(R.id.header_main_layout)).setWeightSum(6f);
             }
             return false;
         }
@@ -187,7 +196,9 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
     private Handler groceryDBItemsCallbackHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
+            Log.d(TAG, "In groceryDBItemsCallbackHandler");
             if (msg.arg1 == 0) {
+                Log.d(TAG, "In groceryDBItemsCallbackHandler, categories loaded!");
                 groceryCategoriesMapping.clear();
                 groceryCategoriesMapping.putAll(groceryItemDBHandler.returnCategories());
                 categoryImageMapping = groceryCategoriesMapping;
@@ -198,6 +209,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 listDataChild.clear();
                 listDataChild.putAll(groceryItemDBHandler.returnDataChildren());
                 if (listDataChild.isEmpty()) {
+                    Log.d(TAG, "In groceryDBItemsCallbackHandler, no items loaded, reloading again!");
                     groceryItemDBHandler.parseChildren(grocery.getPlaceId(), false);
                     grocery.setPartner(false);
                     placeMap.get(grocery.getPlaceId()).setPartner(false);
@@ -213,6 +225,7 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
                 }).start();
                 listDataHeader.clear();
                 listDataHeader.addAll(listDataChild.keySet());
+                Log.d(TAG, "In groceryDBItemsCallbackHandler, items loaded!");
                 if (!groceryCategoriesMapping.isEmpty())
                     listAdapter.notifyDataSetChanged();
             }

@@ -6,9 +6,18 @@
     <ImageView
         android:layout_width="28dp"
         android:layout_height="28dp"
+        android:layout_margin="5dp"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_arrow_back_white_48dp"
+        android:id="@+id/back_to_main_icon"/>
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_margin="10dp"
         android:layout_gravity="center_vertical"
         android:id="@+id/place_type_icon"/>
+
 
     <LinearLayout
         android:layout_width="wrap_content"

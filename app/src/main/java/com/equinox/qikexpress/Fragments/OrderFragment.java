@@ -68,11 +68,11 @@ public class OrderFragment extends Fragment {
         inflaterMain = inflater;
 
         initViews(rootView);
-
         trainViewEngine();
         setTextEngine();
         setTimestampEngine();
         setAlphaViews();
+
         return rootView;
     }
 
@@ -139,11 +139,14 @@ public class OrderFragment extends Fragment {
         else statusMessageView.get(PROCESSING).setText(Html.fromHtml("Your order has been assigned to <b>" + currentOrder.getEmployee().getName()
                 + "</b> who will finish the task within <b>"
                 + StringManipulation.getFormattedTime(currentOrder.getDeadline()) + "</b"));
+        String currentAddress = currentOrder.getFrom().getSelectedAddress() != null
+                ? currentOrder.getFrom().getSelectedAddress().getAddress().getFullAddress()
+                : currentOrder.getFrom().getCurrentAddress().getFullAddress();
         if (currentOrder.getDriver() == null) {
             statusMessageView.get(COMPLETED).setText("Your order is processed. Driver not yet assigned.");
             statusMessageView.get(PICKED_UP).setText("Your order is to be picked up by driver assigned");
             statusMessageView.get(ENROUTE).setText(Html.fromHtml("Your order will be soon enroute soon to your Address at <b>"
-                    + currentOrder.getFrom().getPermAddress().getFullAddress() + "</b>"));
+                    + currentAddress + "</b>"));
             statusMessageView.get(DELIVERED).setText("Your order will soon be delivered to your place. Please wait!");
         } else {
             statusMessageView.get(COMPLETED).setText(Html.fromHtml("Your order is processed. Waiting for your driver <b>"
@@ -151,9 +154,9 @@ public class OrderFragment extends Fragment {
             statusMessageView.get(PICKED_UP).setText(Html.fromHtml("Your order is picked up by <b>" + currentOrder.getDriver().getName() + "</b>"));
             if (currentOrder.getOrderStatus().equals(ENROUTE))
                 statusMessageView.get(ENROUTE).setText(Html.fromHtml("Your order is now enroute soon to your Address at <b>"
-                    + currentOrder.getFrom().getPermAddress().getFullAddress() + "</b>"));
+                    + currentAddress + "</b>"));
             else statusMessageView.get(ENROUTE).setText(Html.fromHtml("Your order will be soon enroute soon to your Address at <b>"
-                    + currentOrder.getFrom().getPermAddress().getFullAddress() + "</b>"));
+                    + currentAddress + "</b>"));
             if (!currentOrder.getOrderStatus().equals(DELIVERED))
                 statusMessageView.get(DELIVERED).setText("Your order will soon be delivered to your place. Please wait!");
             else statusMessageView.get(DELIVERED).setText("Your order is delivered to your place. Enjoy!");

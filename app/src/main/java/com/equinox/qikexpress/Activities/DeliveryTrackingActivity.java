@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.RelativeLayout;
 
@@ -44,7 +43,7 @@ public class DeliveryTrackingActivity extends BaseOrderActivity implements OnMap
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delivery_tracking);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getWindow().setLayout(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -64,7 +63,7 @@ public class DeliveryTrackingActivity extends BaseOrderActivity implements OnMap
         setUpMap();
         List<Marker> markers = new ArrayList<>();
         MarkerOptions markerUserOptions = new MarkerOptions();
-        markerUserOptions.position(currentUser.getPermLocation())
+        markerUserOptions.position(currentUser.getSelectedAddress().getLocation())
                 .title(currentUser.getName())
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person_black_24dp));
         Marker markerUser = mMap.addMarker(markerUserOptions);
@@ -79,7 +78,7 @@ public class DeliveryTrackingActivity extends BaseOrderActivity implements OnMap
         markers.add(markerBusiness);
         if (currentOrder.getDriver() != null) {
             MarkerOptions markerDriverOptions = new MarkerOptions();
-            markerDriverOptions.position(currentOrder.getDriver().getPermLocation())
+            markerDriverOptions.position(currentOrder.getDriver().getCurrentLocation())
                     .title(currentOrder.getDriver().getName())
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bike_black_24dp));
             Marker markerDriver = mMap.addMarker(markerDriverOptions);

@@ -29,7 +29,7 @@ public class ReviewRecyclerAdapter extends RecyclerView.Adapter<ReviewViewHolder
 
     @Override
     public ReviewViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View holder = LayoutInflater.from(parent.getContext()).inflate(R.layout.review_item, parent, false);
+        View holder = LayoutInflater.from(parent.getContext()).inflate(R.layout.review_item, parent, false);
         return new ReviewViewHolder(holder);
     }
 
@@ -42,8 +42,11 @@ public class ReviewRecyclerAdapter extends RecyclerView.Adapter<ReviewViewHolder
         holder.getTimeSubmitted().setText(StringManipulation.getFormattedDate((long)manager.getTimeSubmitted()*1000));
         double ratingValue = (float) manager.getRatingValue();
         holder.getRatingBar().setRating((float) ratingValue);
-        if (manager.getAuthorPhotoURL() != null)
-            holder.getAuthorImage().setImageUrl(manager.getAuthorPhotoURL().substring(2), DataHolder.getInstance().getImageLoader());
+        if (manager.getAuthorPhotoURL() != null) {
+            if (!manager.getAuthorPhotoURL().contains("http"))
+                manager.setAuthorPhotoURL("http://" + manager.getAuthorPhotoURL().substring(2));
+            holder.getAuthorImage().setImageUrl(manager.getAuthorPhotoURL(), DataHolder.getInstance().getImageLoader());
+        }
     }
 
     @Override

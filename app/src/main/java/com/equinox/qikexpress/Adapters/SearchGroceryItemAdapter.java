@@ -1,8 +1,8 @@
 package com.equinox.qikexpress.Adapters;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,18 +13,14 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.equinox.qikexpress.Activities.GroceryItemDetailActivity;
-import com.equinox.qikexpress.Activities.GroceryItemsMainActivity;
 import com.equinox.qikexpress.Activities.SearchGroceryItemActivity;
 import com.equinox.qikexpress.Filters.GroceryItemFilter;
+import com.equinox.qikexpress.Fragments.GroceryItemDetailFragment;
 import com.equinox.qikexpress.Models.DataHolder;
-import com.equinox.qikexpress.Models.GroceryItem;
 import com.equinox.qikexpress.Models.GroceryItemCollection;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.CartQuantityHandler;
-import com.equinox.qikexpress.Utils.StringManipulation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,9 +63,11 @@ public class SearchGroceryItemAdapter extends RecyclerView.Adapter<SearchGrocery
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent groceryItemDetailIntent = new Intent(activity, GroceryItemDetailActivity.class);
-                groceryItemDetailIntent.putExtra("ITEM_NAME", groceryItemCollection.getItemName());
-                activity.startActivity(groceryItemDetailIntent);
+                SearchGroceryItemActivity callingActivity = (SearchGroceryItemActivity) activity;
+                FragmentManager fragmentManager = callingActivity.getSupportFragmentManager();
+                GroceryItemDetailFragment groceryItemDetailFragment =
+                        GroceryItemDetailFragment.newInstance("ITEM_NAME", groceryItemCollection.getItemName());
+                groceryItemDetailFragment.show(fragmentManager, "GroceryItemDetailFragment");
             }
         });
         CartQuantityHandler cartQuantityHandler = new CartQuantityHandler(groceryItemCollection,

@@ -5,11 +5,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.equinox.qikexpress.Models.Constants;
 import com.equinox.qikexpress.Models.DataHolder;
@@ -25,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -53,19 +56,21 @@ public class GetPlaceDetails {
         String baseURL = "https://maps.googleapis.com/maps/api/place/details/json?";
         for (String placeId :  placeIds) {
             String urlArguments = "placeid=" + placeId + "&key=" + Constants.PLACES_API_KEY;
-            JsonObjectRequest placeDetailsReq = new JsonObjectRequest(baseURL+urlArguments, null, placeJSONListener, placeJSONErrorListener);
-            AppVolleyController.getInstance().addToRequestQueue(placeDetailsReq);
+            CacheRequest placeCacheRequest = new CacheRequest(0, baseURL+urlArguments, placeJSONListener, placeJSONErrorListener);
+            AppVolleyController.getInstance().addToRequestQueue(placeCacheRequest);
         }
-        message = new Message();
+        message = Message.obtain();
         if (arguments != null) message.obj = arguments;
     }
 
-    private Response.Listener<JSONObject> placeJSONListener = new Response.Listener<JSONObject>() {
+    private Response.Listener<NetworkResponse> placeJSONListener = new Response.Listener<NetworkResponse>() {
         @Override
-        public void onResponse(JSONObject response) {
-            Log.d(TAG, response.toString());
+        public void onResponse(NetworkResponse responseNetwork) {
             try {
                 final Place place = new Place();
+                final String jsonString = new String(responseNetwork.data, HttpHeaderParser.parseCharset(responseNetwork.headers));
+                JSONObject response = new JSONObject(jsonString);
+                Log.d(TAG, response.toString());
                 if (response.has("result")) {
                     JSONObject resultObj = response.getJSONObject("result");
                     JSONObject geometry = resultObj.getJSONObject("geometry");
@@ -102,16 +107,18 @@ public class GetPlaceDetails {
                     }
                     place.setPlaceId(resultObj.getString("place_id"));
                     if (resultObj.has("rating")) place.setTotalRating(resultObj.getDouble("rating"));
-                    JSONArray ratingsArray = resultObj.getJSONArray("reviews");
-                    List<RatingsManager> tempRatingsList = new ArrayList<>();
-                    for (int j = 0; j < ratingsArray.length(); j++) {
-                        JSONObject review = ratingsArray.getJSONObject(j);
-                        RatingsManager rating = new RatingsManager(review.getString("author_name"),
-                                review.has("profile_photo_url") ? review.getString("profile_photo_url") : null,
-                                review.getInt("rating"), review.has("text") ? review.getString("text") : null, review.getInt("time"));
-                        tempRatingsList.add(rating);
+                    if (resultObj.has("reviews")) {
+                        JSONArray ratingsArray = resultObj.getJSONArray("reviews");
+                        List<RatingsManager> tempRatingsList = new ArrayList<>();
+                        for (int j = 0; j < ratingsArray.length(); j++) {
+                            JSONObject review = ratingsArray.getJSONObject(j);
+                            RatingsManager rating = new RatingsManager(review.getString("author_name"),
+                                    review.has("profile_photo_url") ? review.getString("profile_photo_url") : null,
+                                    review.getInt("rating"), review.has("text") ? review.getString("text") : null, review.getInt("time"));
+                            tempRatingsList.add(rating);
+                        }
+                        place.setIndividualRatings(tempRatingsList);
                     }
-                    place.setIndividualRatings(tempRatingsList);
                     place.setgMapURL(resultObj.getString("url"));
                     place.setVicinity(resultObj.getString("vicinity"));
                     if (resultObj.has("website")) place.setWebURL(resultObj.getString("website"));
@@ -129,7 +136,8 @@ public class GetPlaceDetails {
                         address.getAddressElements().add(tempAddressElement);
                     }
                     place.setAddress(address);
-                    place.setPhoneNumber(resultObj.getString("international_phone_number"));
+                    if (resultObj.has("international_phone_number"))
+                        place.setPhoneNumber(resultObj.getString("international_phone_number"));
                     if (placeMap.containsKey(place.getPlaceId()))
                         placeMap.put(place.getPlaceId(), placeMap.get(place.getPlaceId()).mergePlace(place));
                     else placeMap.put(place.getPlaceId(), place);
@@ -155,7 +163,7 @@ public class GetPlaceDetails {
                         if (placeHandler != null) placeHandler.sendMessage(message);
                     }
                 }
-            } catch (JSONException e) {
+            } catch (JSONException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }

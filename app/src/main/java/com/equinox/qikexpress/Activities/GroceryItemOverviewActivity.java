@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,62 +11,49 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.equinox.qikexpress.Adapters.GroceryItemRecyclerAdapter;
+import com.equinox.qikexpress.Fragments.GroceryItemOverviewFragment;
 import com.equinox.qikexpress.Models.DataHolder;
-import com.equinox.qikexpress.Models.GroceryItem;
-import com.equinox.qikexpress.Models.GroceryItemCollection;
 import com.equinox.qikexpress.R;
-import com.equinox.qikexpress.Utils.HybridLayoutManager;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
 import static com.equinox.qikexpress.Models.DataHolder.category1;
 import static com.equinox.qikexpress.Models.DataHolder.category2;
-import static com.equinox.qikexpress.Models.DataHolder.groceryItemCollectionCat2Mapping;
 import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
-public class GroceryItemActivity extends AppCompatActivity {
+public class GroceryItemOverviewActivity extends AppCompatActivity {
 
-    private List<GroceryItemCollection> groceryItemCollectionList;
-    private RecyclerView groceryItemRecycler;
-    private GroceryItemRecyclerAdapter groceryItemRecyclerAdapter;
-    private HybridLayoutManager layoutManager;
     private TextView cartCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_grocery_item);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_grocery_item_overview);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getWindow().setLayout(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
         String category1 = getIntent().getStringExtra("CATEGORY1");
         String category2 = getIntent().getStringExtra("CATEGORY2");
         String placeId = getIntent().getStringExtra("PLACE_ID");
+
+        getSupportActionBar().setTitle(category1 + " -> " + category2);
         if (!placeMap.get(placeId).getPartner()) {
             Snackbar.make(findViewById(R.id.grocery_item_coordinator_layout),
                     "The price and availability is at the discretion of the outlet.", Snackbar.LENGTH_INDEFINITE).show();
         }
 
-        groceryItemCollectionList = DataHolder.groceryItemCollectionCat2Mapping.get(category1).get(category2);
-
-        layoutManager = new HybridLayoutManager(this);
-        groceryItemRecycler = (RecyclerView) findViewById(R.id.grocery_item_recycler);
-        groceryItemRecycler.setLayoutManager(layoutManager.getLayoutManager(150));
-        groceryItemRecycler.setHasFixedSize(true);
-        groceryItemRecyclerAdapter = new GroceryItemRecyclerAdapter(this, groceryItemCollectionList);
-        groceryItemRecycler.setAdapter(groceryItemRecyclerAdapter);
-
-        getSupportActionBar().setTitle(category1 + " -> " + category2);
-        DataHolder.category1 = category1;
-        DataHolder.category2 = category2;
+        Bundle arguments = new Bundle();
+        arguments.putString("CATEGORY1",category1);
+        arguments.putString("CATEGORY2", category2);
+        arguments.putString("PLACE_ID", placeId);
+        GroceryItemOverviewFragment fragment = new GroceryItemOverviewFragment();
+        fragment.setArguments(arguments);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.grocery_item_overview_container, fragment)
+                .commit();
     }
 
     @Override
@@ -93,7 +79,7 @@ public class GroceryItemActivity extends AppCompatActivity {
         cartItem.getActionView().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent groceryShoppingCartIntent = new Intent(GroceryItemActivity.this, GroceryShoppingCartActivity.class);
+                Intent groceryShoppingCartIntent = new Intent(GroceryItemOverviewActivity.this, GroceryShoppingCartActivity.class);
                 startActivity(groceryShoppingCartIntent);
             }
         });
@@ -107,7 +93,7 @@ public class GroceryItemActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_search) {
-            Intent searchGroceryItemsIntent = new Intent(GroceryItemActivity.this, SearchGroceryItemActivity.class);
+            Intent searchGroceryItemsIntent = new Intent(GroceryItemOverviewActivity.this, SearchGroceryItemActivity.class);
             searchGroceryItemsIntent.putExtra("CATEGORY1", category1);
             searchGroceryItemsIntent.putExtra("CATEGORY2", category2);
             startActivity(searchGroceryItemsIntent);

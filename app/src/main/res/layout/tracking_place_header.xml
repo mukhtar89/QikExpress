@@ -6,106 +6,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="?actionBarSize"
+    android:paddingBottom="10dp"
     app:layout_collapseMode="parallax">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:weightSum="5"
         android:id="@+id/header_detail">
-        <com.android.volley.toolbox.NetworkImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center_vertical"
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_marginLeft="30dp"
-            android:background="@drawable/rounded_corner"
-            android:backgroundTint="#FFFFFF"
-            android:id="@+id/profile_img"
-            android:scaleType="centerCrop" />
+            android:layout_weight="1">
+            <com.android.volley.toolbox.NetworkImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:background="@drawable/rounded_corner"
+                android:backgroundTint="#FFFFFF"
+                android:id="@+id/profile_img"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter" />
+        </LinearLayout>
 
         <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp" >
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:layout_marginStart="20dp" >
 
-        <TableRow >
-            <LinearLayout
-                app:layout_collapseMode="parallax"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="4"
-                android:paddingRight="50dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="3"
-                    android:gravity="start"
-                    android:textStyle="bold"
-                    android:textSize="15sp"
-                    android:text="Order ID"
-                    android:layout_gravity="center_vertical|left"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/orderId"/>
-            </LinearLayout>
-        </TableRow>
-        <TableRow >
-            <LinearLayout
-                app:layout_collapseMode="parallax"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_weight="10"
-                android:paddingRight="50dp"
-                android:paddingTop="5dp">
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    android:src="@drawable/ic_local_shipping_white_48dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:gravity="left"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_gravity="center_vertical|left"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/dist"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="|"
-                    android:gravity="start"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_gravity="center_vertical|center_horizontal|center"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF" />
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    android:src="@drawable/ic_timelapse_white_48dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:gravity="left"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_gravity="center_vertical|left"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:id="@+id/time"/>
-            </LinearLayout>
-        </TableRow>
-    </TableLayout>
+            <TableRow >
+                <LinearLayout
+                    app:layout_collapseMode="parallax"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="4"
+                    android:paddingRight="50dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:gravity="start"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:text="Order ID"
+                        android:layout_gravity="center_vertical|left"
+                        android:padding="5dp"
+                        android:textColor="#FFFFFF"
+                        android:id="@+id/orderId"/>
+                </LinearLayout>
+            </TableRow>
+            <TableRow >
+                <LinearLayout
+                    app:layout_collapseMode="parallax"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="10"
+                    android:paddingRight="50dp"
+                    android:paddingTop="5dp">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:src="@drawable/ic_local_shipping_white_48dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:gravity="left"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_gravity="center_vertical|left"
+                        android:padding="5dp"
+                        android:textColor="#FFFFFF"
+                        android:id="@+id/dist"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="|"
+                        android:gravity="start"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_gravity="center_vertical|center_horizontal|center"
+                        android:padding="5dp"
+                        android:textColor="#FFFFFF" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:src="@drawable/ic_timelapse_white_48dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:gravity="left"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_gravity="center_vertical|left"
+                        android:padding="5dp"
+                        android:textColor="#FFFFFF"
+                        android:id="@+id/time"/>
+                </LinearLayout>
+            </TableRow>
+        </TableLayout>
 
     </LinearLayout>
 

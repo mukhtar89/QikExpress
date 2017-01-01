@@ -1,8 +1,6 @@
 package com.equinox.qikexpress.Activities;
 
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
@@ -10,8 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -43,14 +39,7 @@ import static com.equinox.qikexpress.Enums.QikList.GROCERY;
 import static com.equinox.qikexpress.Models.Constants.BUSINESS;
 import static com.equinox.qikexpress.Models.Constants.CHECKOUT;
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
-import static com.equinox.qikexpress.Models.Constants.ITEM_ID;
-import static com.equinox.qikexpress.Models.Constants.ITEM_IMAGE;
-import static com.equinox.qikexpress.Models.Constants.ITEM_NAME;
-import static com.equinox.qikexpress.Models.Constants.ITEM_PRICE;
-import static com.equinox.qikexpress.Models.Constants.ITEM_QTY;
 import static com.equinox.qikexpress.Models.Constants.ORDERS;
-import static com.equinox.qikexpress.Models.Constants.PLACE_ID;
-import static com.equinox.qikexpress.Models.Constants.PLACE_NAME;
 import static com.equinox.qikexpress.Models.Constants.PLACE_TYPE;
 import static com.equinox.qikexpress.Models.Constants.SAVE_FOR_LATER;
 import static com.equinox.qikexpress.Models.Constants.SHOP;
@@ -76,7 +65,7 @@ public class CheckoutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -172,6 +161,15 @@ public class CheckoutActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        for (Item item : checkoutItemsList) {
+            cartReference.child(item.getPlaceId() + item.getItemId()).setValue(item.toMap());
+            checkoutReference.child(item.getPlaceId() + item.getItemId()).removeValue();
+        }
+        super.onBackPressed();
+    }
+
     private Handler addressFetchHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -206,8 +204,10 @@ public class CheckoutActivity extends AppCompatActivity {
                     tempOrder.getItems().add(item);
                     checkoutReference.child(item.getPlaceId() + item.getItemId()).removeValue();
                     tempOrderTable.put(item.getPlaceId(), tempOrder);
-                    if (tempOrder.getItems().size() == placeItemCount.get(item.getPlaceId()))
+                    if (tempOrder.getItems().size() == placeItemCount.get(item.getPlaceId())) {
+                        tempOrder.getStatusTimestamp().put(INCOMING, System.currentTimeMillis());
                         orderBusinessReference.child(tempOrder.getId()).setValue(tempOrder.toMap());
+                    }
                     /*if (item.getItemPriceValue() != null) {
                         final DatabaseReference walletOutletReference = businessReference.child(WALLET);
                         final Float[] walletBusinessAmount = {(float) 0.00};

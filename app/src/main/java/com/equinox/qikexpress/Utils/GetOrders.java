@@ -78,6 +78,7 @@ public class GetOrders {
                 DataHolder.database.getReference(BUSINESS).child(tempOrder.getShop().getBasePath()).child(tempOrder.getShop().getPlaceId())
                         .child(ORDERS).child(dataSnapshot.getKey()).removeValue();
                 orderList.remove(tempOrder.getId());
+                if (orderHandler != null) orderHandler.sendMessage(new Message());
             }
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {}

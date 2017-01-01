@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by mukht on 10/29/2016.
  */
-public class GroceryListRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable{
+public class GroceryListRecyclerAdapter extends BaseListRecyclerAdapterFilter {
 
     private Activity activity;
     private List<Grocery> groceryList;

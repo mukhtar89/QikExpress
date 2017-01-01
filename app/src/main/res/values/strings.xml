@@ -38,5 +38,7 @@
     <string name="title_activity_grocery_item_detail">GroceryItemDetailActivity</string>
     <string name="search_grocery_item_hint">Search Grocery Item</string>
     <string name="search_grocery_hint">Search Grocery</string>
+    <string name="title_activity_my_places">MyPlacesActivity</string>
+    <string name="title_activity_add_my_place">Add My Place</string>
 
 </resources>

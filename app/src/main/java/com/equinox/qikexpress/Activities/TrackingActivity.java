@@ -56,7 +56,7 @@ public class TrackingActivity extends BaseOrderActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracking);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

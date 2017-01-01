@@ -7,6 +7,10 @@
             android:icon="@drawable/ic_account_balance_wallet_black_48dp"
             android:title="My Wallet" />
         <item
+            android:id="@+id/nav_my_places"
+            android:icon="@drawable/ic_place_black_48dp"
+            android:title="My Places" />
+        <item
             android:id="@+id/nav_offer"
             android:icon="@drawable/ic_local_offer_black_48dp"
             android:title="My Offers" />

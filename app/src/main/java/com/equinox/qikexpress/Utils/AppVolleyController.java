@@ -80,21 +80,22 @@ public class AppVolleyController extends Application {
             mRequestQueue.cancelAll(tag);
         }
     }
+
     private <T> void setRequestRetryPolicy(final Request<T> request) {
         request.setRetryPolicy(new RetryPolicy() {
             @Override
             public int getCurrentTimeout() {
-                return 60000;
+                return 10000;
             }
             @Override
             public int getCurrentRetryCount() {
-                return 60000;
+                return 10000;
             }
             @Override
             public void retry(VolleyError error) throws VolleyError {
-                Log.e(TAG, "Retry Error! Timedout...  " + request.getUrl());
+                Log.e(TAG, "Retry Error! Timedout  " + error.getMessage() +" " + request.getUrl());
+                cancelPendingRequests(request.getTag());
             }
         });
     }
-
 }

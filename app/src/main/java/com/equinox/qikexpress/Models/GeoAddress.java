@@ -28,6 +28,13 @@ public class GeoAddress {
         this.addressElements = addressElements;
     }
 
+    public String getCountry() {
+        reArrangeElements();
+        for (int i=addressElements.size()-1; i>=0; i--)
+            if (addressElements.get(i).getTypes().contains("country"))
+                return addressElements.get(i).getName();
+        return null;
+    }
     public String getFullAddress() {
         reArrangeElements();
         StringBuilder builder = new StringBuilder();

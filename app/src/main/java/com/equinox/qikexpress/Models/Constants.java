@@ -58,4 +58,6 @@ public interface Constants {
     String SHOP = "shop";
     String USER ="user";
     String STATUS_TIMESTAMP = "statusTimestamp";
+    String SELECTED_ADDRESS = "selectedAddress";
+    String MY_PLACES = "myPlaces";
 }

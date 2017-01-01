@@ -26,9 +26,11 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.equinox.qikexpress.Adapters.MainRecyclerViewAdapter;
+import com.equinox.qikexpress.Fragments.AddPlaceFragment;
 import com.equinox.qikexpress.Models.DataHolder;
 import com.equinox.qikexpress.Models.GeoAddress;
 import com.equinox.qikexpress.Models.User;
+import com.equinox.qikexpress.Models.UserPlace;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.equinox.qikexpress.Utils.FusedLocationService;
@@ -38,15 +40,24 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import static com.equinox.qikexpress.Models.Constants.CONSUMER;
+import static com.equinox.qikexpress.Models.Constants.MY_PLACES;
 import static com.equinox.qikexpress.Models.Constants.ORDERS;
 import static com.equinox.qikexpress.Models.Constants.USER;
 import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 import static com.equinox.qikexpress.Models.DataHolder.database;
 import static com.equinox.qikexpress.Models.DataHolder.location;
 import static com.equinox.qikexpress.Models.DataHolder.userDatabaseReference;
+import static com.equinox.qikexpress.Models.DataHolder.userPlaceHashMap;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -69,7 +80,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setIcon(R.drawable.logo);
 
@@ -92,7 +103,7 @@ public class MainActivity extends AppCompatActivity
                     loginName.setVisibility(View.VISIBLE);
                     loginName.setText(user.getDisplayName());
                     loginEmail.setText(user.getEmail());
-                    profileFrame.setVisibility(View.VISIBLE);
+                    profileFrame.setVisibility(View.GONE);
                     if (user.getPhotoUrl() != null){
                         profileFrame.setVisibility(View.VISIBLE);
                         loginImage.setImageUrl(user.getPhotoUrl().toString(), DataHolder.getInstance().getImageLoader());
@@ -100,7 +111,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -191,8 +201,9 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_wallet) {
-            Intent walletIntent = new Intent(MainActivity.this, WalletActivity.class);
-            startActivity(walletIntent);
+            startActivity(new Intent(MainActivity.this, WalletActivity.class));
+        } else if (id == R.id.nav_my_places) {
+            startActivity(new Intent(MainActivity.this, MyPlacesActivity.class));
         } else if (id == R.id.nav_history) {
 
         } else if (id == R.id.nav_offer) {
@@ -229,8 +240,32 @@ public class MainActivity extends AppCompatActivity
                 GeoAddress address = fetchGeoAddress.getAddress();
                 currentUser.setCurrentAddress(address);
                 currentUser.setCurrentLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+                userDatabaseReference.child(MY_PLACES).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Boolean flag = false;
+                        if (dataSnapshot.hasChildren()) {
+                            Iterator<Map.Entry<String,Object>> iterator
+                                    = ((Map<String,Object>) dataSnapshot.getValue()).entrySet().iterator();
+                            while (iterator.hasNext()) {
+                                Map.Entry<String,Object> entry = iterator.next();
+                                userPlaceHashMap.put(entry.getKey(),
+                                        new UserPlace().fromMap((Map<String,Object>) entry.getValue()));
+                                if (userPlaceHashMap.get(entry.getKey()).getAddress().getFullAddress()
+                                        .equals(currentUser.getCurrentAddress().getFullAddress())) flag = true;
+                            }
+                        }
+                        if (!flag) {
+                            AddPlaceFragment addPlaceFragment =
+                                    AddPlaceFragment.newInstance(currentUser.getCurrentAddress(), currentUser.getCurrentLocation());
+                            addPlaceFragment.show(getSupportFragmentManager(), "AddPlaceFragment");
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {}
+                });
                 fetchGeoAddress.fetchCurrencyMetadata(null);
-                DataHolder.getInstance().generateMetadata(sharedPreferences);
+                DataHolder.getInstance().generateMetadata();
             }
             return false;
         }
@@ -240,13 +275,6 @@ public class MainActivity extends AppCompatActivity
         userDatabaseReference =
                 database.getReference(USER).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         if (currentUser == null) currentUser = new User();
-        Gson gsonUser = new Gson();
-        String jsonAddress = sharedPreferences.getString("permAddress", "");
-        if (!jsonAddress.isEmpty())
-            currentUser.setPermAddress(gsonUser.fromJson(jsonAddress, GeoAddress.class));
-        String jsonPermLocation = sharedPreferences.getString("permLocation", "");
-        if (!jsonPermLocation.isEmpty())
-            currentUser.setPermLocation(gsonUser.fromJson(jsonPermLocation, LatLng.class));
         DataHolder.getInstance().setRole(CONSUMER);
         DataHolder.ordersReference = userDatabaseReference.child(ORDERS).getRef();
         addressFetchHandler.sendMessage(new Message());

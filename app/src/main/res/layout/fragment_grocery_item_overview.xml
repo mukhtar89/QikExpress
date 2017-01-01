@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/grocery_item_coordinator_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.equinox.qikexpress.Activities.GroceryItemOverviewActivity">
+
+
+    <LinearLayout
+        android:id="@+id/category_title"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary" >
+        <TextView
+            android:id="@+id/grocery_item_category_chain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:padding="15dp"
+            android:text="Sample Text"
+            android:textSize="17sp"/>
+    </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:padding="0dp"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/grocery_item_recycler"/>
+
+</RelativeLayout>
