@@ -82,18 +82,23 @@ public class GetPlaceDetails {
                         JSONObject openingHours = resultObj.getJSONObject("opening_hours");
                         place.setOpenNow(openingHours.getBoolean("open_now"));
                         Periods tempPeriods = new Periods();
-                        Periods.CloseOpen[] tempCloseOpen;
+                        Periods.CloseOpen[] tempCloseOpen = null;
                         JSONArray periodArray = openingHours.getJSONArray("periods");
                         for (int j = 0; j < periodArray.length(); j++) {
                             JSONObject periodObj = periodArray.getJSONObject(j);
-                            JSONObject closeObj = periodObj.getJSONObject("close");
-                            tempCloseOpen = tempPeriods.getNewCloseOpen();
-                            tempCloseOpen[0].setDay(closeObj.getInt("day"));
-                            tempCloseOpen[0].setTime(closeObj.getInt("time"));
-                            JSONObject openObj = periodObj.getJSONObject("open");
-                            tempCloseOpen = tempPeriods.getNewCloseOpen();
-                            tempCloseOpen[1].setDay(openObj.getInt("day"));
-                            tempCloseOpen[1].setTime(openObj.getInt("time"));
+                            if (periodObj.has("close")) {
+                                JSONObject closeObj = periodObj.getJSONObject("close");
+                                tempCloseOpen = tempPeriods.getNewCloseOpen();
+                                tempCloseOpen[0].setDay(closeObj.getInt("day"));
+                                tempCloseOpen[0].setTime(closeObj.getInt("time"));
+                            }
+                            if (periodObj.has("open")) {
+                                JSONObject openObj = periodObj.getJSONObject("open");
+                                tempCloseOpen = tempPeriods.getNewCloseOpen();
+                                tempCloseOpen[1].setDay(openObj.getInt("day"));
+                                tempCloseOpen[1].setTime(openObj.getInt("time"));
+                            }
+                            if (periodObj.has("close") || periodObj.has("open"))
                             tempPeriods.getPeriods().add(tempCloseOpen);
                         }
                         place.setPeriods(tempPeriods);
@@ -151,7 +156,9 @@ public class GetPlaceDetails {
                                 place.setTimeFromCurrent(params[1]);
                                 placeMap.put(place.getPlaceId(), placeMap.get(place.getPlaceId()).mergePlace(place));
                                 hidePDialog();
-                                if (placeHandler != null) placeHandler.sendMessage(message);
+                                try {
+                                    if (placeHandler != null) placeHandler.sendMessage(message);
+                                } catch (IllegalStateException ignored) {}
                                 return false;
                             }
                         });

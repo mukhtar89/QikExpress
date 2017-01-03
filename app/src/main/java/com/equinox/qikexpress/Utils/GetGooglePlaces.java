@@ -1,12 +1,9 @@
 package com.equinox.qikexpress.Utils;
 
-import android.app.Dialog;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -14,17 +11,13 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.ClearCacheRequest;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.equinox.qikexpress.Enums.QikList;
 import com.equinox.qikexpress.Models.Constants;
 import com.equinox.qikexpress.Models.DataHolder;
-import com.equinox.qikexpress.Models.Grocery;
 import com.equinox.qikexpress.Models.Photo;
 import com.equinox.qikexpress.Models.Place;
 import com.equinox.qikexpress.Utils.MapUtils.DistanceRequest;
-import com.equinox.qikexpress.ViewHolders.GroceryListRecyclerViewHolder;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -39,7 +32,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.equinox.qikexpress.Models.DataHolder.location;
 import static com.equinox.qikexpress.Models.DataHolder.placeMap;
 
 /**
@@ -55,6 +47,7 @@ public class GetGooglePlaces<T extends Place> {
     private List<T> placeList;
     private HashSet<String> loadedPlaces;
     private Integer pagination;
+    private Location location;
 
     public GetGooglePlaces(QikList placeType, Handler[] placeHandlers) {
         placeList = new ArrayList<>();
@@ -65,6 +58,7 @@ public class GetGooglePlaces<T extends Place> {
 
     public synchronized void parsePlaces(final Location location, final Integer pagination) {
         this.pagination = pagination;
+        this.location = location;
         String baseURL = "https://maps.googleapis.com/maps/api/place/search/json?";
         String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                 + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;

@@ -35,6 +35,7 @@ import static com.equinox.qikexpress.Enums.QikList.GROCERY;
 import static com.equinox.qikexpress.Models.Constants.CURRENT_ADDRESS;
 import static com.equinox.qikexpress.Models.Constants.SELECTED_ADDRESS;
 import static com.equinox.qikexpress.Models.DataHolder.currentUser;
+import static com.equinox.qikexpress.Models.DataHolder.location;
 
 /**
  * Created by mukht on 12/31/2016.
@@ -49,6 +50,7 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
     private GroceryListRecyclerAdapter listRecyclerAdapter;
     private Integer pagination;
     private Gson groceryGson;
+    private Location location;
 
     public static GroceryListFragment newInstance() {
         Bundle args = new Bundle();
@@ -70,13 +72,13 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
             getGooglePlaces.setPlaceList(groceryList);
         }
         if (getActivity().getIntent().getStringExtra(SELECTED_ADDRESS).equals(CURRENT_ADDRESS))
-            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            location = DataHolder.location;
         else {
-            Location location  = new Location(LocationManager.GPS_PROVIDER);
+            location  = new Location(LocationManager.GPS_PROVIDER);
             location.setLatitude(currentUser.getSelectedAddress().getLocation().latitude);
             location.setLongitude(currentUser.getSelectedAddress().getLocation().longitude);
-            getGooglePlaces.parsePlaces(location, pagination);
         }
+        getGooglePlaces.parsePlaces(location, pagination);
         getGooglePlaces.addFinishedListener();
     }
 
@@ -128,7 +130,7 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
         public boolean handleMessage(Message msg) {
             showpDialog();
             pagination++;
-            if (pagination < 200) getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            if (pagination < 200) getGooglePlaces.parsePlaces(location, pagination);
             else {
                 hidePDialog();
                 Toast.makeText(getContext(), "No more Groceries can be Loaded!", Toast.LENGTH_LONG).show();
@@ -141,7 +143,7 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
         @Override
         public boolean handleMessage(Message msg) {
             pagination++;
-            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+            getGooglePlaces.parsePlaces(location, pagination);
             return false;
         }
     });
@@ -170,7 +172,7 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
                             @Override
                             public void onClick(View v) {
                                 showpDialog();
-                                getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+                                getGooglePlaces.parsePlaces(location, pagination);
                             }
                         }).show();
             return false;

@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
@@ -19,7 +21,7 @@ import com.equinox.qikexpress.R;
  */
 public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-    private CardView itemCardGrocery;
+    private LinearLayout itemCardGrocery;
     private TextView groceryItemName, groceryItemPrice;
     private NetworkImageView itemImg;
     private Activity activity;
@@ -28,7 +30,7 @@ public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder imple
     public GroceryItemRecyclerViewHolder(View itemView, Activity activity) {
         super(itemView);
         this.activity = activity;
-        itemCardGrocery = (CardView) itemView.findViewById(R.id.grocery_item_card);
+        itemCardGrocery = (LinearLayout) itemView.findViewById(R.id.grocery_item_card);
         groceryItemName = (TextView) itemView.findViewById(R.id.grocery_item_name);
         groceryItemPrice = (TextView) itemView.findViewById(R.id.grocery_item_price);
         itemImg = (NetworkImageView) itemView.findViewById(R.id.grocery_item_image);
@@ -36,7 +38,7 @@ public class GroceryItemRecyclerViewHolder extends RecyclerView.ViewHolder imple
         itemImg.setOnClickListener(this);
     }
 
-    public CardView getItemCardGrocery() {
+    public LinearLayout getItemCardGrocery() {
         return itemCardGrocery;
     }
     public TextView getGroceryItemName() {

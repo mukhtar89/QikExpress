@@ -118,7 +118,7 @@ public class MyPlacesActivity extends AppCompatActivity {
                                     userDatabaseReference.child(MY_PLACES).child(userPlace.getUserPlaceName()).removeValue();
                                     userPlaceHashMap.remove(userPlace.getUserPlaceName());
                                     myPlaceList.removeView(myPlaceView);
-                                    Snackbar.make(v, userPlace.getUserPlaceName() + " is deleted", Snackbar.LENGTH_LONG)
+                                    Snackbar.make(v, userPlace.getUserPlaceName() + " is deleted", Snackbar.LENGTH_INDEFINITE)
                                             .setAction("UNDO", new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {

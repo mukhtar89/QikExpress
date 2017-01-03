@@ -44,8 +44,10 @@ public class InfoReviewActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_rate_review_white_48dp);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_info_outline_white_48dp);
+
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_info_outline_white_48dp);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_rate_review_white_48dp);
+
     }
 
     /**
@@ -60,7 +62,7 @@ public class InfoReviewActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            if (position == 0)  return ReviewFragment.newInstance(getIntent().getStringExtra("PLACE_ID"));
+            if (position == 1)  return ReviewFragment.newInstance(getIntent().getStringExtra("PLACE_ID"));
             else return InfoFragment.newInstance();
         }
 
@@ -72,9 +74,9 @@ public class InfoReviewActivity extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
-                    return "REVIEWS";
                 case 1:
+                    return "REVIEWS";
+                case 0:
                     return "INFO";
             }
             return null;

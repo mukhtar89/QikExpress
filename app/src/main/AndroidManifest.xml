@@ -55,11 +55,15 @@ package="com.equinox.qikexpress">
         android:parentActivityName=".Activities.GroceryItemsMainActivity" android:theme="@style/FullHeightDialog">
         <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.equinox.qikexpress.Activities.GroceryItemsMainActivity" />
     </activity>
-    <activity android:name=".Activities.GroceryItemOverviewActivity" android:parentActivityName=".Activities.GroceryItemsMainActivity"
+    <activity android:name=".Activities.GroceryItemOverviewActivity"
+        android:parentActivityName=".Activities.GroceryItemsMainActivity"
         android:theme="@style/FullHeightDialog" />
-    <activity android:name=".Activities.WalletActivity" android:label="@string/title_activity_wallet"
-        android:parentActivityName=".Activities.MainActivity" android:theme="@style/AppTheme.NoActionBar">
-        <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.equinox.qikexpress.Activities.MainActivity" />
+    <activity android:name=".Activities.WalletActivity"
+        android:label="@string/title_activity_wallet"
+        android:parentActivityName=".Activities.MainActivity"
+        android:theme="@style/AppTheme.NoActionBar">
+        <meta-data android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.equinox.qikexpress.Activities.MainActivity" />
     </activity>
     <activity android:name=".Activities.GroceryShoppingCartActivity" android:label="@string/title_activity_grocery_shopping_cart"
         android:parentActivityName=".Activities.ShopListActivity" android:theme="@style/AppTheme.NoActionBar">

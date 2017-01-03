@@ -16,6 +16,7 @@ import static com.equinox.qikexpress.Models.DataHolder.mTwoPane;
 public class HybridLayoutManager {
 
     private Activity activity;
+    private Integer columns;
 
     public HybridLayoutManager(Activity activity) {
         this.activity = activity;
@@ -28,10 +29,14 @@ public class HybridLayoutManager {
         float density  = activity.getResources().getDisplayMetrics().density;
         float dpWidth  = outMetrics.widthPixels / density;
         if (mTwoPane) dpWidth *= 0.6;
-        int columns = (int) Math.floor(dpWidth/maxWidth);
+        columns = (int) Math.floor(dpWidth/maxWidth);
         GridLayoutManager layoutManager = new GridLayoutManager(activity, columns);
         layoutManager.setOrientation(GridLayoutManager.VERTICAL);
         layoutManager.canScrollVertically();
         return layoutManager;
+    }
+
+    public Integer getColumnCount() {
+        return columns;
     }
 }

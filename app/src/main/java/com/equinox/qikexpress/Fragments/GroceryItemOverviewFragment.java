@@ -1,8 +1,11 @@
 package com.equinox.qikexpress.Fragments;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +29,6 @@ import static com.equinox.qikexpress.Models.DataHolder.mTwoPane;
 public class GroceryItemOverviewFragment extends Fragment {
 
     private List<GroceryItemCollection> groceryItemCollectionList;
-    private RecyclerView groceryItemRecycler;
-    private GroceryItemRecyclerAdapter groceryItemRecyclerAdapter;
-    private HybridLayoutManager layoutManager;
     private String category1, category2;
 
     @Override
@@ -52,11 +52,26 @@ public class GroceryItemOverviewFragment extends Fragment {
         }
         else rootView.findViewById(R.id.category_title).setVisibility(View.GONE);
 
-        layoutManager = new HybridLayoutManager(getActivity());
-        groceryItemRecycler = (RecyclerView) rootView.findViewById(R.id.grocery_item_recycler);
+        RecyclerView groceryItemRecycler = (RecyclerView) rootView.findViewById(R.id.grocery_item_recycler);
+        HybridLayoutManager layoutManager = new HybridLayoutManager(getActivity());
         groceryItemRecycler.setLayoutManager(layoutManager.getLayoutManager(150));
+
+        DividerItemDecoration verticalDecoration = new DividerItemDecoration(groceryItemRecycler.getContext(),
+                DividerItemDecoration.HORIZONTAL);
+        Drawable verticalDivider = ContextCompat.getDrawable(getActivity(), R.drawable.vertical_divider);
+        verticalDecoration.setDrawable(verticalDivider);
+        groceryItemRecycler.addItemDecoration(verticalDecoration);
+
+        DividerItemDecoration horizontalDecoration = new DividerItemDecoration(groceryItemRecycler.getContext(),
+                DividerItemDecoration.VERTICAL);
+        Drawable horizontalDivider = ContextCompat.getDrawable(getActivity(), R.drawable.horizontal_divider);
+        horizontalDecoration.setDrawable(horizontalDivider);
+        groceryItemRecycler.addItemDecoration(horizontalDecoration);
+
+
         groceryItemRecycler.setHasFixedSize(true);
-        groceryItemRecyclerAdapter = new GroceryItemRecyclerAdapter(getActivity(), groceryItemCollectionList);
+        GroceryItemRecyclerAdapter groceryItemRecyclerAdapter
+                = new GroceryItemRecyclerAdapter(getActivity(), groceryItemCollectionList);
         groceryItemRecycler.setAdapter(groceryItemRecyclerAdapter);
 
         return rootView;

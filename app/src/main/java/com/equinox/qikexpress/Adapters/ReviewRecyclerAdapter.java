@@ -46,7 +46,7 @@ public class ReviewRecyclerAdapter extends RecyclerView.Adapter<ReviewViewHolder
             if (!manager.getAuthorPhotoURL().contains("http"))
                 manager.setAuthorPhotoURL("http://" + manager.getAuthorPhotoURL().substring(2));
             holder.getAuthorImage().setImageUrl(manager.getAuthorPhotoURL(), DataHolder.getInstance().getImageLoader());
-        }
+        } else holder.getAuthorImage().setVisibility(View.GONE);
     }
 
     @Override
