@@ -34,12 +34,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.equinox.qikexpress.Models.Constants.CURRENT_ADDRESS;
 import static com.equinox.qikexpress.Models.Constants.GROCERY_CART;
+import static com.equinox.qikexpress.Models.Constants.SELECTED_ADDRESS;
+import static com.equinox.qikexpress.Models.Constants.SHOP_TYPE;
 import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 
 public class ShopListActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
-    private static final String TYPE = "TYPE";
     public ShopListCommunicator shopListCommunicator;
     private LinearLayout sortBy, filterBy, trackOrders;
     private TextView cartCount, myAddress, placeTypeName;
@@ -73,8 +75,6 @@ public class ShopListActivity extends AppCompatActivity implements SearchView.On
         } else {
             View actionBarView = getSupportActionBar().getCustomView();
             myAddress = (TextView) actionBarView.findViewById(R.id.location_address);
-            if (currentUser.getCurrentAddress() == null) myAddress.setText("");
-            else myAddress.setText(currentUser.getCurrentAddress().getFullAddress());
             backIcon = (ImageView) findViewById(R.id.back_to_main_icon);
             backIcon.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -83,7 +83,11 @@ public class ShopListActivity extends AppCompatActivity implements SearchView.On
                 }
             });
 
-            qikList = QikList.valueOf(getIntent().getStringExtra(TYPE));
+            if (getIntent().getStringExtra(SELECTED_ADDRESS).equals(CURRENT_ADDRESS))
+                myAddress.setText(currentUser.getCurrentAddress().getFullAddress());
+            else myAddress.setText(currentUser.getSelectedAddress().getAddress().getFullAddress());
+
+            qikList = QikList.valueOf(getIntent().getStringExtra(SHOP_TYPE));
             placeTypeName = (TextView) actionBarView.findViewById(R.id.place_type_name);
             placeTypeName.setText(qikList.getPlural());
             placeIcon = (ImageView) actionBarView.findViewById(R.id.place_type_icon);

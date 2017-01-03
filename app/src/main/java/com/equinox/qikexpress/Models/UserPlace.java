@@ -14,11 +14,50 @@ import java.util.Map;
 
 public class UserPlace {
 
+    private String userPlaceName;
     private GeoAddress address;
     private LatLng location;
     private String houseNumber, houseName, apartmentName, apartmentNumber,  buildingNumber, buildingName, community, society, zone,
-            organization, addresseeName, neighbourhood, municipality, fullAddressText;
+            organization, addresseeName, neighbourhood, municipality, snapshotURL, fullAddress;
     private Integer postBox;
+
+    @Override
+    public String toString() {
+        return userPlaceName;
+    }
+
+    @Exclude
+    public String getDetailString() {
+        StringBuilder detailBuilder = new StringBuilder();
+        if (addresseeName != null)
+            detailBuilder.append(", Addressee Name: ").append(addresseeName);
+        if (houseNumber != null)
+            detailBuilder.append(", House No: ").append(houseNumber);
+        if (houseName != null)
+            detailBuilder.append(", House Name: ").append(houseName);
+        if (apartmentName != null)
+            detailBuilder.append(", Apt Name: ").append(apartmentName);
+        if (apartmentNumber != null)
+            detailBuilder.append(", Apt No: ").append(apartmentNumber);
+        if (buildingName != null)
+            detailBuilder.append(", Bldg Name: ").append(buildingName);
+        if (buildingNumber != null)
+            detailBuilder.append(", Bldg Number: ").append(buildingNumber);
+        if (community != null)
+            detailBuilder.append(", Community: ").append(community);
+        if (society != null)
+            detailBuilder.append(", Society: ").append(society);
+        if (zone != null)
+            detailBuilder.append(", Zone: ").append(zone);
+        if (organization != null)
+            detailBuilder.append(", Organization: ").append(organization);
+        if (neighbourhood != null)
+            detailBuilder.append(", Neighbourhood: ").append(neighbourhood);
+        if (municipality != null)
+            detailBuilder.append(", Municipality: ").append(municipality);
+        if (detailBuilder.toString().isEmpty()) return "";
+        else return detailBuilder.toString().substring(2);
+    }
 
     @Exclude
     public List<String> getList() {
@@ -85,6 +124,7 @@ public class UserPlace {
         }
     }
 
+    @Exclude
     public void removeValue(String type) {
         switch (type) {
             case "House Number":
@@ -143,8 +183,8 @@ public class UserPlace {
         userPlaceMap.put("Zone",zone);
         userPlaceMap.put("Organization",organization);
         userPlaceMap.put("Addressee Name",addresseeName);
-        userPlaceMap.put("eighbourhood",neighbourhood);
-        userPlaceMap.put("Nmunicipality",municipality);
+        userPlaceMap.put("Neighbourhood",neighbourhood);
+        userPlaceMap.put("Municipality",municipality);
         userPlaceMap.put("Post Box",postBox);
         return userPlaceMap;
     }
@@ -166,15 +206,18 @@ public class UserPlace {
         userPlaceMap.put("neighbourhood",neighbourhood);
         userPlaceMap.put("municipality",municipality);
         userPlaceMap.put("postBox",postBox);
-        userPlaceMap.put("address",address.toMap());
+        if (address != null)
+            userPlaceMap.put("address",address.toMap());
         userPlaceMap.put("location",location);
-        userPlaceMap.put("fullAddressText",fullAddressText);
+        userPlaceMap.put("snapshotURL",snapshotURL);
+        userPlaceMap.put("fullAddress",fullAddress);
         return userPlaceMap;
     }
 
     @Exclude
     public UserPlace fromMap(Map<String,Object> userPlaceMap) {
-        address = new GeoAddress().fromMap((Map<String,Object>) userPlaceMap.get("address"));
+        if (userPlaceMap.containsKey("address"))
+            address = new GeoAddress().fromMap((Map<String,Object>) userPlaceMap.get("address"));
         Map<String,Double> locationInfo = (Map<String,Double>) userPlaceMap.get("location");
         location = new LatLng(locationInfo.get("latitude"), locationInfo.get("longitude"));
         if (userPlaceMap.containsKey("houseNumber"))
@@ -203,8 +246,10 @@ public class UserPlace {
             neighbourhood = (String) userPlaceMap.get("neighbourhood");
         if (userPlaceMap.containsKey("municipality"))
             municipality = (String) userPlaceMap.get("municipality");
-        if (userPlaceMap.containsKey("fullAddressText"))
-            fullAddressText = (String) userPlaceMap.get("fullAddressText");
+        if (userPlaceMap.containsKey("snapshotURL"))
+            snapshotURL = (String) userPlaceMap.get("snapshotURL");
+        if (userPlaceMap.containsKey("fullAddress"))
+            fullAddress = (String) userPlaceMap.get("fullAddress");
         if (userPlaceMap.containsKey("postBox"))
             postBox = (int) (long) userPlaceMap.get("postBox");
         return this;
@@ -306,11 +351,23 @@ public class UserPlace {
     public void setLocation(LatLng location) {
         this.location = location;
     }
-    public String getFullAddressText() {
-        return fullAddressText;
+    public String getSnapshotURL() {
+        return snapshotURL;
     }
-    public void setFullAddressText(String fullAddressText) {
-        this.fullAddressText = fullAddressText;
+    public void setSnapshotURL(String snapshotURL) {
+        this.snapshotURL = snapshotURL;
+    }
+    public String getFullAddress() {
+        return fullAddress;
+    }
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
+    }
+    public String getUserPlaceName() {
+        return userPlaceName;
+    }
+    public void setUserPlaceName(String userPlaceName) {
+        this.userPlaceName = userPlaceName;
     }
 
 }

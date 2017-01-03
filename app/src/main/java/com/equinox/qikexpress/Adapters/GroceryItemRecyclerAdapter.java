@@ -37,7 +37,6 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
 
     private Activity activity;
     private List<GroceryItemCollection> groceryItemCollectionList;
-    private CartQuantityHandler cartQuantityHandler;
 
     public GroceryItemRecyclerAdapter(Activity activity, List<GroceryItemCollection> groceryItemCollectionList) {
         this.activity = activity;
@@ -53,7 +52,7 @@ public class GroceryItemRecyclerAdapter extends RecyclerView.Adapter<GroceryItem
     @Override
     public void onBindViewHolder(final GroceryItemRecyclerViewHolder holder, final int position) {
         final GroceryItemCollection groceryItemCollection = groceryItemCollectionList.get(position);
-        cartQuantityHandler = new CartQuantityHandler(groceryItemCollection, holder.getFabAddCart(),
+        CartQuantityHandler cartQuantityHandler = new CartQuantityHandler(groceryItemCollection, holder.getFabAddCart(),
                 holder.getItemCardGrocery(), activity);
         if (groceryItemCollection.getItemImageList().get(0) != null)
             holder.getItemImg().setImageUrl(groceryItemCollection.getItemImageList().get(0)

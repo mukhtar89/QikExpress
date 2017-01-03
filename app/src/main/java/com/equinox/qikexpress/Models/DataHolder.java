@@ -57,6 +57,7 @@ public class DataHolder {
     public static Location location = null;
     public static User currentUser = null;
     public static HashMap<String,UserPlace> userPlaceHashMap = new HashMap<>();
+    public static String defaultUserPlace = null;
     public static final Boolean lock = true;
 
     public void setGroceryMap() {
@@ -110,6 +111,7 @@ public class DataHolder {
         userDatabaseReference.child(USER_METADATA).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                currentUser.setId(FirebaseAuth.getInstance().getCurrentUser().getUid());
                 currentUser.setName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
                 currentUser.setPhotoURL(String.valueOf(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()));
                 currentUser.setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());

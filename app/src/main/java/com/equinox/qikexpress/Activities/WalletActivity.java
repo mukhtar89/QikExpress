@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.equinox.qikexpress.R;
+import com.equinox.qikexpress.Utils.AppVolleyController;
 import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,7 +54,6 @@ public class WalletActivity extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading Wallet Amount...");
-        progressDialog.setCancelable(false);
         progressDialog.show();
 
         walletAmount = (TextView) findViewById(R.id.wallet_amount);
@@ -82,6 +82,17 @@ public class WalletActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppVolleyController.activityPaused();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AppVolleyController.activityResumed();
+    }
 
     private Handler walletCurrencyHandler = new Handler(new Handler.Callback() {
         @Override
@@ -90,7 +101,8 @@ public class WalletActivity extends AppCompatActivity {
                 walletAmount.setText(currentUser.getLocalCurrency() + " " + walletAmountValue);
                 progressDialog.dismiss();
             }
-            else new FetchGeoAddress().fetchCurrencyMetadata(walletCurrencyHandler);
+            else if (AppVolleyController.isActivityVisible())
+                new FetchGeoAddress().fetchCurrencyMetadata(walletCurrencyHandler);
             return false;
         }
     });

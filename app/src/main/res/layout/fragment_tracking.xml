@@ -37,7 +37,7 @@
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:id="@+id/timestamp_incoming"
-                        android:textColor="@color/red"
+                        android:textColor="@android:color/holo_red_dark"
                         android:text=""/>
 
                     <ImageView
@@ -45,7 +45,7 @@
                         android:layout_height="20dp"
                         android:layout_margin="2dp"
                         android:src="@drawable/ic_alarm_add_white_48dp"
-                        android:tint="@color/red"
+                        android:tint="@android:color/holo_red_dark"
                         android:layout_gravity="center_vertical|center_horizontal" />
 
                     <TextView
@@ -55,7 +55,7 @@
                         android:padding="2dp"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="@color/red"
+                        android:textColor="@android:color/holo_red_dark"
                         android:text="INCOMING"/>
 
                 </LinearLayout>
@@ -79,7 +79,8 @@
                     android:layout_toRightOf="@+id/order_chain_incoming"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -208,7 +209,8 @@
                     android:layout_toRightOf="@+id/order_chain_processing"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -363,7 +365,8 @@
                     android:layout_toRightOf="@+id/order_chain_completed"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -494,7 +497,8 @@
                     android:layout_toRightOf="@+id/order_chain_pickedup"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -595,7 +599,8 @@
                     android:layout_toRightOf="@+id/order_chain_enroute"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -726,7 +731,8 @@
                     android:layout_toRightOf="@+id/order_chain_delivered"
                     card_view:cardUseCompatPadding="true"
                     card_view:cardElevation="2dp"
-                    card_view:cardCornerRadius="2dp">
+                    card_view:cardCornerRadius="2dp"
+                    card_view:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"

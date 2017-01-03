@@ -54,6 +54,7 @@ public class GetGooglePlaces<T extends Place> {
     private Handler[] placeHandlers;
     private List<T> placeList;
     private HashSet<String> loadedPlaces;
+    private Integer pagination;
 
     public GetGooglePlaces(QikList placeType, Handler[] placeHandlers) {
         placeList = new ArrayList<>();
@@ -63,7 +64,7 @@ public class GetGooglePlaces<T extends Place> {
     }
 
     public synchronized void parsePlaces(final Location location, final Integer pagination) {
-        //placeList = new ArrayList<>();
+        this.pagination = pagination;
         String baseURL = "https://maps.googleapis.com/maps/api/place/search/json?";
         String urlArguments = "location="+location.getLatitude()+","+location.getLongitude()+"&radius="+pagination*250
                 + "&type=" + placeType.getTypeName() + "&sensor=true_or_false&key=" + Constants.PLACES_API_KEY;
@@ -76,25 +77,6 @@ public class GetGooglePlaces<T extends Place> {
             CacheRequest placeReqSecCacheRequest = new CacheRequest(0, baseURL+urlArguments, placesListener, placesErrorListener);
             AppVolleyController.getInstance().addToRequestQueue(placeReqSecCacheRequest, SECONDARY);
         }
-        AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-            @Override
-            public void onRequestFinished(final Request<Object> request) {
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (placeList.isEmpty())  {
-                            AppVolleyController.getInstance().cancelPendingRequests(NORMAL);
-                            AppVolleyController.getInstance().cancelPendingRequests(SECONDARY);
-                            Message message = new Message();
-                            message.arg1 = pagination+1;
-                            placeHandlers[0].sendMessage(message);
-                            return;
-                        }
-                    }
-                },1000);
-                AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(this);
-            }
-        });
     }
 
     private Response.Listener<NetworkResponse> placesListener = new Response.Listener<NetworkResponse>() {
@@ -175,8 +157,41 @@ public class GetGooglePlaces<T extends Place> {
         }
     };
 
+    private RequestQueue.RequestFinishedListener<Object> finishedListener = new RequestQueue.RequestFinishedListener<Object>() {
+        @Override
+        public void onRequestFinished(final Request<Object> request) {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (placeList.isEmpty())  {
+                        AppVolleyController.getInstance().cancelPendingRequests(NORMAL);
+                        AppVolleyController.getInstance().cancelPendingRequests(SECONDARY);
+                        Message message = new Message();
+                        message.arg1 = pagination+1;
+                        placeHandlers[0].sendMessage(message);
+                        return;
+                    }
+                }
+            },1000);
+        }
+    };
+
+    public void addFinishedListener() {
+        AppVolleyController.getInstance().getRequestQueue().addRequestFinishedListener(finishedListener);
+    }
+
+    public void removeFinishedListener() {
+        AppVolleyController.getInstance().getRequestQueue().removeRequestFinishedListener(finishedListener);
+    }
 
     public List<T> returnPlaceList() {
         return placeList;
     }
+
+    public void setPlaceList(List<T> placeList) {
+        this.placeList.addAll(placeList);
+        for (Place place : placeList)
+            loadedPlaces.add(place.getPlaceId());
+    }
+
 }

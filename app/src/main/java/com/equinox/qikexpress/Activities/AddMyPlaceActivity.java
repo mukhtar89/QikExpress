@@ -1,9 +1,17 @@
 package com.equinox.qikexpress.Activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
@@ -16,16 +24,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.equinox.qikexpress.Adapters.MainRecyclerViewAdapter;
 import com.equinox.qikexpress.Adapters.UserPlaceParaAdapter;
 import com.equinox.qikexpress.Models.GeoAddress;
 import com.equinox.qikexpress.Models.UserPlace;
 import com.equinox.qikexpress.R;
+import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.equinox.qikexpress.Utils.LocationPermission;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -41,17 +50,28 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnPausedListener;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static com.equinox.qikexpress.Models.Constants.MY_PLACES;
+import static com.equinox.qikexpress.Models.Constants.USER;
+import static com.equinox.qikexpress.Models.Constants.USER_METADATA;
 import static com.equinox.qikexpress.Models.DataHolder.currentUser;
+import static com.equinox.qikexpress.Models.DataHolder.getInstance;
 import static com.equinox.qikexpress.Models.DataHolder.userDatabaseReference;
+import static com.equinox.qikexpress.Models.DataHolder.userPlaceHashMap;
 
 public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -70,6 +90,9 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
     private TextInputEditText userPlaceText;
     private List<String[]> userPlaceParaList;
     private UserPlaceParaAdapter userPlaceParaAdapter;
+    private StorageReference mapSnapshotRef;
+    private ProgressDialog progressDialog;
+    private FetchGeoAddress fetchGeoAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +106,13 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
         mapFragment.getMapAsync(this);
         context = this;
         addUserPlace = new UserPlace();
+        mapSnapshotRef = FirebaseStorage.getInstance().getReference("users").child(currentUser.getId()).child("MapSnapshot");
+
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setCancelable(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setIndeterminate(true);
+        fetchGeoAddress = new FetchGeoAddress();
 
         LinearLayout searchPlaceButton = (LinearLayout) findViewById(R.id.search_place_button);
         searchPlaceButton.setOnClickListener(new View.OnClickListener() {
@@ -129,6 +159,8 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
         placeGson = new Gson();
         if (savedInstanceState != null)
             addUserPlace = placeGson.fromJson(savedInstanceState.getString(USER_PLACE), UserPlace.class);
+        else if (getIntent().hasExtra(USER_PLACE))
+            addUserPlace = userPlaceHashMap.get(getIntent().getStringExtra(USER_PLACE));
         userPlaceParaList = new ArrayList<>();
         Iterator<Map.Entry<String,Object>> paraListIterator = addUserPlace.toMapEdit().entrySet().iterator();
         while (paraListIterator.hasNext()) {
@@ -172,35 +204,114 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
             GeoAddress address = placeGson.fromJson(getIntent().getStringExtra(ADDRESS), GeoAddress.class);
             addressView.setText(Html.fromHtml("Address : <b>" + address.getFullAddress() + "</b>"));
             addUserPlace.setAddress(address);
+        } else if (getIntent().hasExtra(USER_PLACE))
+            addressView.setText(Html.fromHtml("Address : <b>" + addUserPlace.getAddress().getFullAddress() + "</b>"));
+
+        final TextInputEditText otherPlaceName = (TextInputEditText) findViewById(R.id.place_other_type_text);
+        final RadioGroup placeTypeGroup = (RadioGroup) findViewById(R.id.place_type_radio_group);
+        placeTypeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.place_other_type:
+                        otherPlaceName.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        otherPlaceName.setVisibility(View.GONE);
+                        break;
+                }
+            }
+        });
+        if (addUserPlace.getUserPlaceName() != null)
+        switch (addUserPlace.getUserPlaceName()) {
+            case "Home":
+                ((RadioButton)findViewById(R.id.place_home_type)).setChecked(true);
+                break;
+            case "Work":
+                ((RadioButton)findViewById(R.id.place_work_type)).setChecked(true);
+                break;
+            default:
+                ((RadioButton)findViewById(R.id.place_other_type)).setChecked(true);
+                otherPlaceName.setVisibility(View.VISIBLE);
+                otherPlaceName.setText(addUserPlace.getUserPlaceName());
+                break;
         }
 
-        final RadioGroup placeTypeGroup = (RadioGroup) findViewById(R.id.place_type_radio_group);
         FloatingActionButton saveButton = (FloatingActionButton) findViewById(R.id.fab_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int checkedRadioButton = placeTypeGroup.getCheckedRadioButtonId();
-                switch (checkedRadioButton) {
-                    case R.id.place_home_type:
-                        userDatabaseReference.child(MY_PLACES).child("Home").setValue(addUserPlace.toMap());
-                        finish();
-                        break;
-                    case R.id.place_work_type:
-                        userDatabaseReference.child(MY_PLACES).child("Work").setValue(addUserPlace.toMap());
-                        finish();
-                        break;
-                    case R.id.place_other_type:
-                        TextInputEditText otherPlaceName = (TextInputEditText) findViewById(R.id.place_other_type_text);
-                        if (!otherPlaceName.getText().toString().isEmpty()) {
-                            userDatabaseReference.child(MY_PLACES).child(otherPlaceName.getText().toString())
-                                    .setValue(addUserPlace.toMap());   finish();
-                        }
-                        else otherPlaceName.setError("Please enter a name for place");
-                        break;
-                    default:
-                        Snackbar.make(placeTypeGroup, "Please select a PlaceType!", Snackbar.LENGTH_SHORT).show();
-                        break;
+                if (addUserPlace.getAddress() == null)
+                    Snackbar.make(v, "Address not yet decoded", Snackbar.LENGTH_SHORT).show();
+                else {
+                    int checkedRadioButton = placeTypeGroup.getCheckedRadioButtonId();
+                    switch (checkedRadioButton) {
+                        case R.id.place_home_type:
+                            uploadSnapshot("Home");
+                            break;
+                        case R.id.place_work_type:
+                            uploadSnapshot("Work");
+                            break;
+                        case R.id.place_other_type:
+                            if (!otherPlaceName.getText().toString().isEmpty())
+                                uploadSnapshot(otherPlaceName.getText().toString());
+                            else otherPlaceName.setError("Please enter a name for place");
+                            break;
+                        default:
+                            Snackbar.make(placeTypeGroup, "Please select a PlaceType!", Snackbar.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
+            }
+        });
+    }
+
+    private void uploadSnapshot(final String type) {
+        mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            public void onMapLoaded() {
+                mMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                    public void onSnapshotReady(Bitmap bitmap) {
+                        progressDialog.setMessage("Uploading Map Snapshot");
+                        progressDialog.setProgress(0);
+                        progressDialog.show();
+                        StorageReference currentSnapshotRef = mapSnapshotRef.child("map_snapshot_" + type + ".jpg");
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                        byte[] data = baos.toByteArray();
+                        UploadTask photoUploadTask = currentSnapshotRef.putBytes(data);
+                        photoUploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                Snackbar.make(findViewById(R.id.add_my_place_main_layout),
+                                        "Photo could not be uploaded", Snackbar.LENGTH_LONG).show();
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                addUserPlace.setSnapshotURL(downloadUrl.toString());
+                                addUserPlace.setUserPlaceName(type);
+                                userDatabaseReference.child(MY_PLACES).child(type).setValue(addUserPlace.toMap());
+                                userPlaceHashMap.put(type, addUserPlace);
+                                progressDialog.dismiss();
+                                finish();
+                                if (getIntent().hasExtra("ADD"))
+                                    startActivity(new Intent(AddMyPlaceActivity.this, MyPlacesActivity.class));
+                            }
+                        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                                double progress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                                progressDialog.setProgress((int) progress);
+                            }
+                        }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onPaused(UploadTask.TaskSnapshot taskSnapshot) {
+                                progressDialog.setMessage("Upload is paused for the moment");
+                            }
+                        });
+                    }
+                });
             }
         });
     }
@@ -209,6 +320,13 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(USER_PLACE, placeGson.toJson(addUserPlace));
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getIntent().hasExtra("ADD"))
+            startActivity(new Intent(AddMyPlaceActivity.this, MyPlacesActivity.class));
     }
 
     @Override
@@ -222,10 +340,16 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
         mMap = googleMap;
         setUpMap();
         mMap.clear();
-        LatLng myLocation = placeGson.fromJson(getIntent().getStringExtra(LOCATION), LatLng.class);
-        addUserPlace.setLocation(myLocation);
-        mMap.addMarker(new MarkerOptions().position(myLocation).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 17));
+        if (getIntent().hasExtra(LOCATION)) {
+            LatLng myLocation = placeGson.fromJson(getIntent().getStringExtra(LOCATION), LatLng.class);
+            addUserPlace.setLocation(myLocation);
+            mMap.addMarker(new MarkerOptions().position(myLocation).title("Current Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 17));
+        } else if (getIntent().hasExtra(USER_PLACE)) {
+            mMap.addMarker(new MarkerOptions().position(addUserPlace.getLocation()).title(addUserPlace.getUserPlaceName()));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(addUserPlace.getLocation(), 17));
+        }
+        else mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentUser.getCurrentLocation(), 17));
     }
 
     private void setUpMapIfNeeded() {
@@ -253,6 +377,7 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Location location = new Location(LocationManager.GPS_PROVIDER);
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Place place = PlacePicker.getPlace(data, this);
@@ -262,7 +387,11 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title("Current Location"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17));
                 addressView.setText(Html.fromHtml("Address: <b>" + place.getAddress() + "</b>"));
-                addUserPlace.setFullAddressText(place.getAddress().toString());
+                location.setLatitude(place.getLatLng().latitude);
+                location.setLongitude(place.getLatLng().longitude);
+                fetchGeoAddress.fetchLocationGeoData(location, addressFetchHandler, null);
+                addUserPlace.setAddress(null);
+                addUserPlace.setFullAddress(place.getAddress().toString());
                 Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
             }
         }
@@ -276,7 +405,11 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title("Current Location"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17));
                 addressView.setText(Html.fromHtml("Address: <b>" + place.getAddress() + "</b>"));
-                addUserPlace.setFullAddressText(place.getAddress().toString());
+                location.setLatitude(place.getLatLng().latitude);
+                location.setLongitude(place.getLatLng().longitude);
+                fetchGeoAddress.fetchLocationGeoData(location, addressFetchHandler, null);
+                addUserPlace.setAddress(null);
+                addUserPlace.setFullAddress(place.getAddress().toString());
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
                 Log.e(TAG, "Error: Status = " + status.toString());
@@ -286,4 +419,13 @@ public class AddMyPlaceActivity extends AppCompatActivity implements OnMapReadyC
             }
         }
     }
+
+    private Handler addressFetchHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            Snackbar.make(findViewById(R.id.add_my_place_main_layout), "Address decode completed", Snackbar.LENGTH_SHORT).show();
+            addUserPlace.setAddress(fetchGeoAddress.getAddress());
+            return false;
+        }
+    });
 }

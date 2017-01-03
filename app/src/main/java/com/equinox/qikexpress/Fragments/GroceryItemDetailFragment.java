@@ -1,6 +1,7 @@
 package com.equinox.qikexpress.Fragments;
 
 import android.app.Dialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -13,7 +14,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -123,7 +123,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
                 groceryItemCollection.setItemWeight(1f);
                 groceryItemCollection.setItemPriceValue(groceryItemCollection.getItemPricePerWeight());
                 groceryItemWeight.setText("Enter Weight (in kg): ");
-                groceryItemWeight.setLabelFor(R.id.grocery_item_weight_loose);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    groceryItemWeight.setLabelFor(R.id.grocery_item_weight_loose);
                 groceryItemWeightLoose.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -157,7 +158,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
                 groceryItemCollection.setItemVol(1f);
                 groceryItemCollection.setItemPriceValue(groceryItemCollection.getItemPricePerVol());
                 groceryItemVol.setText("Enter Volume (in litre): ");
-                groceryItemVol.setLabelFor(R.id.grocery_item_vol_loose);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    groceryItemVol.setLabelFor(R.id.grocery_item_vol_loose);
                 groceryItemVolLoose.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -190,7 +192,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
                     customSizeListCombined.add(groceryItemCollection.getItemCustomSizeList().get(i));
             }
             if (!customSizeListCombined.isEmpty()) {
-                getGroceryItemCustomSize.setLabelFor(R.id.grocery_item_custom_size_spinner);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    getGroceryItemCustomSize.setLabelFor(R.id.grocery_item_custom_size_spinner);
                 ArrayAdapter<String> customSizeListAdapter = new ArrayAdapter<>(getActivity(),
                         android.R.layout.simple_dropdown_item_1line, customSizeListCombined);
                 getGroceryItemCustomSizeList.setAdapter(customSizeListAdapter);
@@ -212,7 +215,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
             }
             else {
                 groceryItemPrice.setText("Select Price: ");
-                groceryItemPrice.setLabelFor(R.id.grocery_item_price_spinner);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    groceryItemPrice.setLabelFor(R.id.grocery_item_price_spinner);
                 ArrayAdapter<String> priceListAdapter = new ArrayAdapter<>(getActivity(),
                         android.R.layout.simple_dropdown_item_1line, priceListCombined);
                 groceryItemPriceList.setAdapter(priceListAdapter);
@@ -232,7 +236,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
             }
             else {
                 groceryItemWeight.setText("Select Weight: ");
-                groceryItemWeight.setLabelFor(R.id.grocery_item_weight_spinner);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    groceryItemWeight.setLabelFor(R.id.grocery_item_weight_spinner);
                 ArrayAdapter<String> weightListAdapter = new ArrayAdapter<>(getActivity(),
                         android.R.layout.simple_dropdown_item_1line, weightListCombined);
                 groceryItemWeightList.setAdapter(weightListAdapter);
@@ -252,7 +257,8 @@ public class GroceryItemDetailFragment extends DialogFragment {
             }
             else {
                 groceryItemVol.setText("Select Volume: ");
-                groceryItemVol.setLabelFor(R.id.grocery_item_price_spinner);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    groceryItemVol.setLabelFor(R.id.grocery_item_price_spinner);
                 ArrayAdapter<String> volumeListAdapter = new ArrayAdapter<>(getActivity(),
                         android.R.layout.simple_dropdown_item_1line, volumeListCombined);
                 groceryItemVolList.setAdapter(volumeListAdapter);

@@ -58,7 +58,7 @@ public class AddPlaceFragment extends DialogFragment {
         View doNotShowView = inflater.inflate(R.layout.do_not_show_again_layout, null);
         final CheckBox doNotShowCheckBox = (CheckBox) doNotShowView.findViewById(R.id.do_not_show);
         AlertDialog.Builder addAddressDialog = new AlertDialog.Builder(getActivity());
-        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX, false))
+        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX+address.getFullAddress(), false))
             addAddressDialog.setView(doNotShowView);
         addAddressDialog.setCancelable(false)
                 .setTitle("Add to My Places")
@@ -68,8 +68,8 @@ public class AddPlaceFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dismiss();
-                        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX, false) && doNotShowCheckBox.isChecked())
-                            sharedPreferences.edit().putBoolean(SHOW_CHECKBOX, true).apply();
+                        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX+address.getFullAddress(), false) && doNotShowCheckBox.isChecked())
+                            sharedPreferences.edit().putBoolean(SHOW_CHECKBOX+address.getFullAddress(), true).apply();
                         Intent addMyPlaceIntent = new Intent(getActivity(), AddMyPlaceActivity.class);
                         addMyPlaceIntent.putExtra(ADDRESS, gsonUserPlace.toJson(address));
                         addMyPlaceIntent.putExtra(LOCATION, gsonUserPlace.toJson(location));
@@ -80,8 +80,8 @@ public class AddPlaceFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dismiss();
-                        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX, false) && doNotShowCheckBox.isChecked())
-                            sharedPreferences.edit().putBoolean(SHOW_CHECKBOX, true).apply();
+                        if (!sharedPreferences.getBoolean(SHOW_CHECKBOX+address.getFullAddress(), false) && doNotShowCheckBox.isChecked())
+                            sharedPreferences.edit().putBoolean(SHOW_CHECKBOX+address.getFullAddress(), true).apply();
                     }
                 });
         return addAddressDialog.create();

@@ -59,5 +59,7 @@ public interface Constants {
     String USER ="user";
     String STATUS_TIMESTAMP = "statusTimestamp";
     String SELECTED_ADDRESS = "selectedAddress";
+    String CURRENT_ADDRESS = "currentAddress";
     String MY_PLACES = "myPlaces";
+    String SHOP_TYPE = "qikListType";
 }

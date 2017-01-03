@@ -8,8 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.equinox.qikexpress.Activities.MainActivity;
 import com.equinox.qikexpress.Activities.ShopListActivity;
 import com.equinox.qikexpress.Enums.QikList;
+import com.equinox.qikexpress.Fragments.SelectPlaceFragment;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.ViewHolders.MainListViewHolder;
 
@@ -38,9 +40,8 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainListViewHo
             public void onClick(View v) {
                 //int itemPosition = recyclerView.indexOfChild(v);
                 QikList qikList = QikList.values()[parent.indexOfChild(v)];
-                Intent shopListIntent = new Intent(activity, ShopListActivity.class);
-                shopListIntent.putExtra("TYPE", qikList.toString());
-                activity.startActivity(shopListIntent);
+                SelectPlaceFragment selectPlaceFragment = SelectPlaceFragment.newInstance(qikList.toString());
+                selectPlaceFragment.show(((MainActivity)activity).getSupportFragmentManager(), "SelectPlaceFragment");
             }
         });
         return new MainListViewHolder(holder, activity);

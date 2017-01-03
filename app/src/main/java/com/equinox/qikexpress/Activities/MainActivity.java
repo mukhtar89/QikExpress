@@ -1,5 +1,6 @@
 package com.equinox.qikexpress.Activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -36,6 +37,7 @@ import com.equinox.qikexpress.Utils.FetchGeoAddress;
 import com.equinox.qikexpress.Utils.FusedLocationService;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
 import com.equinox.qikexpress.Utils.LocationPermission;
+import com.equinox.qikexpress.Utils.StringManipulation;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,6 +57,7 @@ import static com.equinox.qikexpress.Models.Constants.ORDERS;
 import static com.equinox.qikexpress.Models.Constants.USER;
 import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 import static com.equinox.qikexpress.Models.DataHolder.database;
+import static com.equinox.qikexpress.Models.DataHolder.defaultUserPlace;
 import static com.equinox.qikexpress.Models.DataHolder.location;
 import static com.equinox.qikexpress.Models.DataHolder.userDatabaseReference;
 import static com.equinox.qikexpress.Models.DataHolder.userPlaceHashMap;
@@ -62,19 +65,18 @@ import static com.equinox.qikexpress.Models.DataHolder.userPlaceHashMap;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private Context context;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private Button loginButton;
     private TextView loginName, loginEmail;
     private NetworkImageView loginImage;
     private FrameLayout profileFrame;
-    private RecyclerView recyclerView;
-    private HybridLayoutManager layoutManager;
     private LocationPermission locationPermission;
     private GoogleApiClient mGoogleApiClient;
     private FusedLocationService fusedLocationService;
     private FetchGeoAddress fetchGeoAddress;
-    private SharedPreferences sharedPreferences;
+    private Boolean running = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.category_title);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setIcon(R.drawable.logo);
+        context = this;
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -97,7 +100,7 @@ public class MainActivity extends AppCompatActivity
                     loginName.setVisibility(View.GONE);
                 } else {
                     Log.d("AUTH", "OnAuthState: Signed in " + user.getUid());
-                    prepFirebaseData();
+                    if (!running) prepFirebaseData();
                     loginButton.setVisibility(View.GONE);
                     loginEmail.setVisibility(View.VISIBLE);
                     loginName.setVisibility(View.VISIBLE);
@@ -111,8 +114,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -142,8 +143,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        layoutManager = new HybridLayoutManager(this);
-        recyclerView = (RecyclerView) findViewById(R.id.main_grid_view);
+        HybridLayoutManager layoutManager = new HybridLayoutManager(this);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.main_grid_view);
         recyclerView.setLayoutManager(layoutManager.getLayoutManager(150));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(new MainRecyclerViewAdapter(this));
@@ -203,7 +204,9 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_wallet) {
             startActivity(new Intent(MainActivity.this, WalletActivity.class));
         } else if (id == R.id.nav_my_places) {
-            startActivity(new Intent(MainActivity.this, MyPlacesActivity.class));
+            if (userPlaceHashMap.isEmpty())
+                Toast.makeText(context, "Please wait till your Places are loaded!", Toast.LENGTH_SHORT).show();
+            else startActivity(new Intent(MainActivity.this, MyPlacesActivity.class));
         } else if (id == R.id.nav_history) {
 
         } else if (id == R.id.nav_offer) {
@@ -227,7 +230,7 @@ public class MainActivity extends AppCompatActivity
             if (location == null) {
                 location = fusedLocationService.returnLocation();
                 fetchGeoAddress = new FetchGeoAddress();
-                fetchGeoAddress.fetchLocationGeoData(DataHolder.location, addressFetchHandler, null);
+                fetchGeoAddress.fetchLocationGeoData(location, addressFetchHandler, null);
             }
             return true;
         }
@@ -249,16 +252,25 @@ public class MainActivity extends AppCompatActivity
                                     = ((Map<String,Object>) dataSnapshot.getValue()).entrySet().iterator();
                             while (iterator.hasNext()) {
                                 Map.Entry<String,Object> entry = iterator.next();
-                                userPlaceHashMap.put(entry.getKey(),
-                                        new UserPlace().fromMap((Map<String,Object>) entry.getValue()));
-                                if (userPlaceHashMap.get(entry.getKey()).getAddress().getFullAddress()
-                                        .equals(currentUser.getCurrentAddress().getFullAddress())) flag = true;
+                                if (entry.getKey().equals("default")) defaultUserPlace = (String) entry.getValue();
+                                else if (!(entry.getValue() instanceof Long)){
+                                    userPlaceHashMap.put(entry.getKey(),
+                                            new UserPlace().fromMap((Map<String, Object>) entry.getValue()));
+                                    userPlaceHashMap.get(entry.getKey()).setUserPlaceName(entry.getKey());
+                                    if (userPlaceHashMap.get(entry.getKey()).getAddress().getFullAddress()
+                                            .equals(currentUser.getCurrentAddress().getFullAddress()))
+                                        flag = true;
+                                }
                             }
+                        } else {
+                            userDatabaseReference.child(MY_PLACES).child("Home").setValue(0);
+                            userDatabaseReference.child(MY_PLACES).child("Work").setValue(1);
                         }
                         if (!flag) {
-                            AddPlaceFragment addPlaceFragment =
-                                    AddPlaceFragment.newInstance(currentUser.getCurrentAddress(), currentUser.getCurrentLocation());
-                            addPlaceFragment.show(getSupportFragmentManager(), "AddPlaceFragment");
+                            try {AddPlaceFragment addPlaceFragment =
+                                        AddPlaceFragment.newInstance(currentUser.getCurrentAddress(), currentUser.getCurrentLocation());
+                                addPlaceFragment.show(getSupportFragmentManager(), "AddPlaceFragment");
+                            }catch (IllegalStateException ignored) {}
                         }
                     }
                     @Override
@@ -266,12 +278,14 @@ public class MainActivity extends AppCompatActivity
                 });
                 fetchGeoAddress.fetchCurrencyMetadata(null);
                 DataHolder.getInstance().generateMetadata();
+                running = false;
             }
             return false;
         }
     });
 
     private void prepFirebaseData() {
+        running = true;
         userDatabaseReference =
                 database.getReference(USER).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         if (currentUser == null) currentUser = new User();

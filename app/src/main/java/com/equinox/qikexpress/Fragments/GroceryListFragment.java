@@ -2,6 +2,8 @@ package com.equinox.qikexpress.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,11 +26,15 @@ import com.equinox.qikexpress.Models.ShopListCommunicator;
 import com.equinox.qikexpress.R;
 import com.equinox.qikexpress.Utils.GetGooglePlaces;
 import com.equinox.qikexpress.Utils.HybridLayoutManager;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.equinox.qikexpress.Enums.QikList.GROCERY;
+import static com.equinox.qikexpress.Models.Constants.CURRENT_ADDRESS;
+import static com.equinox.qikexpress.Models.Constants.SELECTED_ADDRESS;
+import static com.equinox.qikexpress.Models.DataHolder.currentUser;
 
 /**
  * Created by mukht on 12/31/2016.
@@ -36,18 +42,42 @@ import static com.equinox.qikexpress.Enums.QikList.GROCERY;
 
 public class GroceryListFragment extends Fragment implements ShopListCommunicator {
 
+    private static final String PAGE = "page", LIST = "list";
     private ProgressDialog pDialog;
     private GetGooglePlaces<Grocery> getGooglePlaces;
     private List<Grocery> groceryList = new ArrayList<>();
     private GroceryListRecyclerAdapter listRecyclerAdapter;
     private Integer pagination;
-
+    private Gson groceryGson;
 
     public static GroceryListFragment newInstance() {
         Bundle args = new Bundle();
         GroceryListFragment fragment = new GroceryListFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getGooglePlaces = new GetGooglePlaces<>(GROCERY, new Handler[]{loopUntilLoad, updateDataListView, dismissDialog});
+        groceryGson = new Gson();
+        if (savedInstanceState == null) pagination = 1;
+        else {
+            pagination = savedInstanceState.getInt(PAGE);
+            for (String groceryGsonString : savedInstanceState.getStringArrayList(LIST))
+                groceryList.add(groceryGson.fromJson(groceryGsonString, Grocery.class));
+            getGooglePlaces.setPlaceList(groceryList);
+        }
+        if (getActivity().getIntent().getStringExtra(SELECTED_ADDRESS).equals(CURRENT_ADDRESS))
+            getGooglePlaces.parsePlaces(DataHolder.location, pagination);
+        else {
+            Location location  = new Location(LocationManager.GPS_PROVIDER);
+            location.setLatitude(currentUser.getSelectedAddress().getLocation().latitude);
+            location.setLongitude(currentUser.getSelectedAddress().getLocation().longitude);
+            getGooglePlaces.parsePlaces(location, pagination);
+        }
+        getGooglePlaces.addFinishedListener();
     }
 
     @Nullable
@@ -60,10 +90,6 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
         pDialog.setCancelable(false);
         pDialog.show();
 
-        pagination = 1;
-        getGooglePlaces = new GetGooglePlaces<>(GROCERY, new Handler[]{loopUntilLoad, updateDataListView, dismissDialog});
-        getGooglePlaces.parsePlaces(DataHolder.location, pagination);
-
         HybridLayoutManager layoutManager = new HybridLayoutManager(getActivity());
         listRecyclerAdapter = new GroceryListRecyclerAdapter(getActivity(), groceryList, loadMoreAction);
         RecyclerView recyclerView = (RecyclerView) groceryView.findViewById(R.id.grocery_grid_view);
@@ -75,9 +101,20 @@ public class GroceryListFragment extends Fragment implements ShopListCommunicato
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(PAGE, pagination);
+        ArrayList<String> tempGsonList = new ArrayList<>();
+        for (Grocery grocery : groceryList)
+            tempGsonList.add(groceryGson.toJson(grocery));
+        outState.putStringArrayList(LIST, tempGsonList);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         hidePDialog();
+        getGooglePlaces.removeFinishedListener();
     }
 
     @Override

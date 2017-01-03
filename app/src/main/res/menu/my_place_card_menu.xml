@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.equinox.qikexpress.Activities.ShopListActivity">
+
+    <item
+        android:id="@+id/action_edit"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_edit_black_48dp"
+        android:title="Edit Place"  />
+
+    <item
+        android:id="@+id/action_delete"
+        android:orderInCategory="300"
+        android:icon="@drawable/ic_delete_black_48dp"
+        android:title="Delete Place" />
+
+    <item
+        android:id="@+id/action_default"
+        android:orderInCategory="200"
+        android:title="Make Default"
+        android:icon="@drawable/ic_grade_black_48dp" />
+
+</menu>

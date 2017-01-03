@@ -94,8 +94,8 @@ public class GroceryItemsMainActivity extends AppCompatActivity {
 
         if (grocery.getOpenNow() != null) {
             openNow.setText(grocery.getOpenNow() ? "OPEN" : "CLOSED");
-            openNow.getBackground().setColorFilter(getResources()
-                    .getColor(grocery.getOpenNow() ? R.color.green: R.color.red), PorterDuff.Mode.SRC_ATOP);
+            openNow.getBackground().setColorFilter(getResources().getColor(grocery.getOpenNow()
+                    ? android.R.color.holo_green_dark: android.R.color.holo_red_dark), PorterDuff.Mode.SRC_ATOP);
         }
         if (grocery.getDistanceFromCurrent() != null && grocery.getTimeFromCurrent() != null) {
             distance.setText(grocery.getDistanceFromCurrent().toString() + " km");

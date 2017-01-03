@@ -59,7 +59,15 @@ public class Order {
         for (Integer i=0; i<items.size(); i++)
             listItems.put(i.toString(),items.get(i).toMapCheckout());
         result.put(ORDER_ITEMS, listItems);
-        result.put(STATUS_TIMESTAMP, statusTimestamp);
+        if (!statusTimestamp.isEmpty()) {
+            HashMap<String,Long> tempMap = new HashMap<>();
+            Iterator<Map.Entry<OrderStatus,Long>> iterator = statusTimestamp.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<OrderStatus,Long> entry = iterator.next();
+                tempMap.put(entry.getKey().toString(), entry.getValue());
+            }
+            result.put(STATUS_TIMESTAMP, tempMap);
+        }
         return result;
     }
 
